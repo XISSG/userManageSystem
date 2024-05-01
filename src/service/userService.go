@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
-	"github.com/xissg/userManageSystem/model"
+	"github.com/xissg/userManageSystem/src/model"
 	"gorm.io/gorm"
 	"log"
 )

@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"github.com/gin-gonic/gin"
-	"github.com/xissg/userManageSystem/model"
+	"github.com/xissg/userManageSystem/src/model"
 	"math/big"
 )
 

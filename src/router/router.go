@@ -7,9 +7,9 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/spf13/viper"
-	"github.com/xissg/userManageSystem/controller"
-	"github.com/xissg/userManageSystem/model"
-	"github.com/xissg/userManageSystem/service"
+	"github.com/xissg/userManageSystem/src/controller"
+	"github.com/xissg/userManageSystem/src/model"
+	"github.com/xissg/userManageSystem/src/service"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/xissg/userManageSystem/middleware"
-	"github.com/xissg/userManageSystem/router"
+	"github.com/xissg/userManageSystem/src/middleware"
+	"github.com/xissg/userManageSystem/src/router"
 )
 
 func main() {
