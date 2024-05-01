@@ -1,11 +1,8 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"time"
 )
-
-var DB *gorm.DB
 
 // User 用户
 type User struct {
