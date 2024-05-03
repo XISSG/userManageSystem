@@ -1,0 +1,58 @@
+
+###
+GET http://localhost:8081/v1/user/admin/query/xissg
+Accept: application/json
+###
+# curl -H "Content-Type:application/json" -X POST -v -d '{"user_name":"test", "user_account":"","user_password":"123456aA@","avatar_url":"","is_delete":false,"user_role":0}' http://127.0.0.1:8080/v1/user/login
+POST http://localhost:8081/v1/user/login
+Content-Type: application/json
+
+{
+  "user_name": "xissg",
+  "user_account": "name.xissg@gmail.com",
+  "user_password": "LCLSWny20@",
+  "avatar_url": "https://github.com/XISSG",
+  "is_delete": false,
+  "user_role": 2
+}
+###
+
+POST http://localhost:8081/v1/user/login
+Content-Type: application/json
+
+{
+"user_name": "test",
+"user_account": "hhh",
+"user_password": "LCLSWny20@",
+"avatar_url": "https://github.com/XISSG",
+"is_delete": false,
+"user_role": 1
+}
+###
+POST http://localhost:8081/v1/user/register
+Content-Type: application/json
+
+{
+  "user_name": "111111",
+  "user_account": "name.xissg@gmail.com",
+  "user_password": "LCLSWny20@",
+  "avatar_url": "https://github.com/XISSG",
+  "is_delete": false,
+  "user_role": 2
+}
+
+###
+POST http://localhost:8081/v1/user/register
+Content-Type: application/json
+
+{
+"user_name": "test",
+"user_account": "hhh",
+"user_password": "LCLSWny20@",
+"avatar_url": "https://github.com/XISSG",
+"is_delete": false,
+"user_role": 1
+}
+###
+POST http://localhost:8081/v1/user/logout
+Accept: application/json

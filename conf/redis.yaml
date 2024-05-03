@@ -1,0 +1,5 @@
+password:
+host: localhost
+port: 6379
+secret: secret
+database: 1
