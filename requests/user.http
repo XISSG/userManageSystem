@@ -2,6 +2,7 @@
 ###
 GET http://localhost:8081/v1/user/admin/query/xissg
 Accept: application/json
+Cookie:  session=MTcxNDgyODQ4OXxOd3dBTkZWU1ZsRlhTRlpVUlRaQ04wUlVURmhPU2xjeldGbEtWMWhPTWpkUU4wRk1URkEwVlU1QlRqWlBNa3REUjFwVlExQkRVMEU9fGtELRvM1p3j2gMIRDuQ4wBrCiPUAgE9_4qGZa3xUiMn; Expires=Sun, 05 May 2024 13:14:49 GMT; Max-Age=86400 Date: Sat, 04 May 2024 13:14:49 GMT
 ###
 # curl -H "Content-Type:application/json" -X POST -v -d '{"user_name":"test", "user_account":"","user_password":"123456aA@","avatar_url":"","is_delete":false,"user_role":0}' http://127.0.0.1:8080/v1/user/login
 POST http://localhost:8081/v1/user/login
@@ -21,12 +22,12 @@ POST http://localhost:8081/v1/user/login
 Content-Type: application/json
 
 {
-"user_name": "test",
-"user_account": "hhh",
-"user_password": "LCLSWny20@",
-"avatar_url": "https://github.com/XISSG",
-"is_delete": false,
-"user_role": 1
+  "user_name": "xissg",
+  "user_account": "hhh",
+  "user_password": "LCLSWny20@",
+  "avatar_url": "https://github.com/XISSG",
+  "is_delete": false,
+  "user_role": 2
 }
 ###
 POST http://localhost:8081/v1/user/register
@@ -46,12 +47,12 @@ POST http://localhost:8081/v1/user/register
 Content-Type: application/json
 
 {
-"user_name": "test",
+"user_name": "xissg",
 "user_account": "hhh",
 "user_password": "LCLSWny20@",
 "avatar_url": "https://github.com/XISSG",
 "is_delete": false,
-"user_role": 1
+"user_role": 2
 }
 ###
 POST http://localhost:8081/v1/user/logout

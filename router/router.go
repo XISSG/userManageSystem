@@ -97,7 +97,7 @@ func NewServer() *gin.Engine {
 	sessionService := service.NewSessionService(store)
 	userService := service.NewUserService(db)
 	redisService := service.NewRedisService(rdb)
-	userController := controller.NewUserController(userService, sessionService, redisService)
+	userController := controller.NewUserController(userService, redisService, sessionService)
 
 	//映射路由
 	v1 := r.Group("v1")
@@ -105,8 +105,10 @@ func NewServer() *gin.Engine {
 		v1.POST("/user/register", userController.Register)
 		v1.POST("/user/login", userController.Login)
 		v1.POST("/user/logout", userController.Logout)
-		v1.POST("/user/admin/match", userController.MatchUsers)
+		v1.POST("/user/admin/update", userController.UpdateUser)
+		v1.GET("/user/admin/query/:username", userController.QueryUser)
 		v1.GET("/user/admin/delete/:username", userController.DeleteUser)
+		//v1.POST("/user/admin/match", userController.MatchUsers)
 	}
 	return r
 }

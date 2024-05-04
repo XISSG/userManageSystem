@@ -34,9 +34,10 @@ func (u User) TableName() string {
 
 // UserSession 存储的用户session信息
 type UserSession struct {
-	ID   int64  `json:"id"`
-	Tags string `json:"tags"`
-	Role int32  `json:"role"`
+	ID       int64  `json:"id"`
+	UserName string `json:"user_name"`
+	Tags     string `json:"tags"`
+	Role     int32  `json:"role"`
 }
 
 // ResultUser 返回结果数据

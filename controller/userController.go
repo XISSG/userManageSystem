@@ -22,16 +22,14 @@ const (
 )
 
 type UserController struct {
-	userService    service.UserService
 	sessionService service.SessionService
-	redisService   service.RedisService
+	rwdService     *service.RWDService
 }
 
-func NewUserController(userService service.UserService, sessionService service.SessionService, redisService service.RedisService) *UserController {
+func NewUserController(userService service.DBService, redisService service.CacheService, sessionService service.SessionService) *UserController {
 	return &UserController{
-		userService:    userService,
 		sessionService: sessionService,
-		redisService:   redisService,
+		rwdService:     service.NewRWDService(userService, redisService),
 	}
 }
 
@@ -53,7 +51,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	}
 
 	//校验用户名是否存在
-	_, err := uc.userService.GetUserByName(user.UserName)
+	_, err := uc.rwdService.Read(user, c)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "username repeated"))
 		log.Println("username repeated")
@@ -93,7 +91,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	user.UpdateTime = time.Now().UTC()
 
 	//插入数据库
-	err = uc.userService.AddUser(user)
+	err = uc.rwdService.Add(user, c)
 	if err != nil {
 		log.Printf("create user failed")
 		return
@@ -127,13 +125,13 @@ func (uc *UserController) Login(c *gin.Context) {
 	user.UserPassword = utils.MD5Crypt(user.UserPassword)
 
 	//查询用户用户名和密码是否匹配
-	re, err := uc.userService.GetUserByName(user.UserName)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	ret, err := uc.rwdService.Read(user, c)
+	if ret == nil {
 		log.Println("The user has not registered yet")
 		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "The user has not registered yet"))
 		return
 	}
-
+	re := ret.(model.User)
 	if re.UserPassword != user.UserPassword {
 		log.Println("username or password is wrong")
 		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "username or password is wrong"))
@@ -142,9 +140,10 @@ func (uc *UserController) Login(c *gin.Context) {
 
 	//登录成功, 存储session信息
 	userSession := model.UserSession{
-		ID:   re.ID,
-		Role: re.UserRole,
-		Tags: re.Tags,
+		ID:       re.ID,
+		UserName: re.UserName,
+		Role:     re.UserRole,
+		Tags:     re.Tags,
 	}
 	err = uc.sessionService.NewOrUpdateSession(c, userSession)
 	if err != nil {
@@ -180,42 +179,63 @@ func (uc *UserController) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.Success(nil, "logout success"))
 }
 
-// MatchUsers  查询用户
-func (uc *UserController) MatchUsers(c *gin.Context) {
-
+// QueryUser 查询用户
+func (uc *UserController) QueryUser(c *gin.Context) {
 	//判断用户权限
 	validity := uc.checkValidity(c)
-	if validity != LOGIN {
-		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "you must login first"))
+
+	if validity != ADMIN {
+		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "you are not admin"))
+		return
+	}
+
+	//获取username参数的值
+	var user model.User
+
+	username := c.Param("username")
+	if username == "" {
+		log.Println("not a valid query username")
+		c.JSON(http.StatusBadRequest, utils.Error(utils.PARAMSERR, "not a valid query username"))
+		return
+	}
+
+	user.UserName = username
+	res, err := uc.rwdService.Read(user, c)
+	if err != nil {
+		return
+	}
+	ret := model.UserProc(res.(model.User))
+	log.Println("query user success")
+	c.JSON(http.StatusOK, utils.Success(ret, "query user success"))
+
+}
+
+// UpdateUser 更新用户信息
+func (uc *UserController) UpdateUser(c *gin.Context) {
+	//判断用户权限
+	validity := uc.checkValidity(c)
+
+	if validity != ADMIN {
+		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "you are not admin"))
 		return
 	}
 
 	var user model.User
-
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&user); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
 		return
 	}
 
-	if user.Tags == "" {
-		log.Printf("user tags is nil")
-		c.JSON(http.StatusBadRequest, utils.Error(utils.PARAMSERR, "user tags is nil"))
+	usersession := uc.sessionService.GetSession(c)
+	user.UserName = usersession.UserName
+	err := uc.rwdService.Update(user, c)
+	if err != nil {
+		log.Printf("user info update  %v", err)
 		return
 	}
-	results, err := uc.userService.GetUsersByTags(user.Tags)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Println("No query users found")
-		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "No match users"))
-		return
-	}
-
-	//查询结果处理
-	rets := model.UsersProc(results)
-
-	log.Printf("query user success")
-	c.JSON(http.StatusOK, utils.Success(rets, "query user success"))
-
+	log.Printf("update user success")
+	c.JSON(http.StatusOK, utils.Success(nil, "update user success"))
 }
 
 // DeleteUser 删除用户
@@ -241,7 +261,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 	user.UserName = username
 
 	//逻辑删除用户
-	err := uc.userService.DeleteUserByName(user.UserName)
+	err := uc.rwdService.Delete(user, c)
 	if err != nil {
 		log.Printf("delete user  %v", err)
 		c.JSON(http.StatusBadRequest, utils.Error(utils.OPERATIONERR, err.Error()))
@@ -265,3 +285,41 @@ func (uc *UserController) checkValidity(c *gin.Context) int {
 	}
 	return ANONYMOUS
 }
+
+// MatchUsers  查询用户
+//func (uc *UserController) MatchUsers(c *gin.Context) {
+//
+//	//判断用户权限
+//	validity := uc.checkValidity(c)
+//	if validity != LOGIN {
+//		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "you must login first"))
+//		return
+//	}
+//
+//	var user model.User
+//
+//	//反序列化取出JSON数据
+//	if err := c.ShouldBindJSON(&user); err != nil {
+//		log.Printf("JSON unmarshal  %v", err)
+//		return
+//	}
+//
+//	if user.Tags == "" {
+//		log.Printf("user tags is nil")
+//		c.JSON(http.StatusBadRequest, utils.Error(utils.PARAMSERR, "user tags is nil"))
+//		return
+//	}
+//	results, err := uc.userService.GetUsersByTags(user.Tags)
+//	if errors.Is(err, gorm.ErrRecordNotFound) {
+//		log.Println("No query users found")
+//		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "No match users"))
+//		return
+//	}
+//
+//	//查询结果处理
+//	rets := model.UsersProc(results)
+//
+//	log.Printf("query user success")
+//	c.JSON(http.StatusOK, utils.Success(rets, "query user success"))
+//
+//}
