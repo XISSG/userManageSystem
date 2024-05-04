@@ -6,14 +6,18 @@ import (
 	"github.com/gin-contrib/sessions"
 	redisstore "github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
-	redis "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
+	swaggerFiles "github.com/swaggo/files"
 	"github.com/xissg/userManageSystem/controller"
 	"github.com/xissg/userManageSystem/middleware"
 	"github.com/xissg/userManageSystem/model"
 	"github.com/xissg/userManageSystem/service"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "github.com/xissg/userManageSystem/docs"
 )
 
 // read configuration from yaml config file
@@ -102,13 +106,22 @@ func NewServer() *gin.Engine {
 	//映射路由
 	v1 := r.Group("v1")
 	{
+
 		v1.POST("/user/register", userController.Register)
+
 		v1.POST("/user/login", userController.Login)
-		v1.POST("/user/logout", userController.Logout)
+
+		v1.GET("/user/logout", userController.Logout)
+
 		v1.POST("/user/admin/update", userController.UpdateUser)
+
 		v1.GET("/user/admin/query/:username", userController.QueryUser)
+
 		v1.GET("/user/admin/delete/:username", userController.DeleteUser)
 		//v1.POST("/user/admin/match", userController.MatchUsers)
 	}
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	return r
 }

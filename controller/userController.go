@@ -34,6 +34,15 @@ func NewUserController(userService service.DBService, redisService service.Cache
 }
 
 // Register 用户注册
+// @Summary User registration
+// @Description Register a new user
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param user body string true "User object"
+// @Success 200 {object} utils.ApiResponse "Success registered"
+// @Failure 400 {object} utils.ApiResponse "Registration failed"
+// @Router /user/register [post]
 func (uc *UserController) Register(c *gin.Context) {
 	var user model.User
 
@@ -105,6 +114,15 @@ func (uc *UserController) Register(c *gin.Context) {
 }
 
 // Login 用户登录
+// @Summary User login
+// @Description Authenticate user login
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param user body string true "User object"
+// @Success 200 {object} utils.ApiResponse "Login successful"
+// @Failure 400 {object} utils.ApiResponse "Login failed"
+// @Router /user/login [post]
 func (uc *UserController) Login(c *gin.Context) {
 	var user model.User
 
@@ -158,6 +176,15 @@ func (uc *UserController) Login(c *gin.Context) {
 }
 
 // Logout 登出账户
+// @Summary User logout
+// @Description User logout
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param user body string true "User object"
+// @Success 200 {object} utils.ApiResponse "Logout successful"
+// @Failure 400 {object} utils.ApiResponse "Logout failed"
+// @Router /user/logout [get]
 func (uc *UserController) Logout(c *gin.Context) {
 
 	//判断用户是否登录
@@ -180,6 +207,15 @@ func (uc *UserController) Logout(c *gin.Context) {
 }
 
 // QueryUser 查询用户
+// @Summary Query user by username
+// @Description Get user information by username
+// @Tags User
+// @Accept  json
+// @Produce  json
+// @Param username query string true "Username"
+// @Success 200 {object} utils.ApiResponse "Query successful"
+// @Failure 400 {object} utils.ApiResponse "Query failed"
+// @Router /user/admin/query [get]
 func (uc *UserController) QueryUser(c *gin.Context) {
 	//判断用户权限
 	validity := uc.checkValidity(c)
@@ -211,6 +247,15 @@ func (uc *UserController) QueryUser(c *gin.Context) {
 }
 
 // UpdateUser 更新用户信息
+// @Summary User update
+// @Description Update user information
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param user body string true "User object"
+// @Success 200 {object} utils.ApiResponse "Update successful"
+// @Failure 400 {object} utils.ApiResponse "Update failed"
+// @Router /user/update [post]
 func (uc *UserController) UpdateUser(c *gin.Context) {
 	//判断用户权限
 	validity := uc.checkValidity(c)
@@ -239,6 +284,15 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 }
 
 // DeleteUser 删除用户
+// @Summary Delete user by username
+// @Description Delete user information by username
+// @Tags User
+// @Accept  json
+// @Produce  json
+// @Param username query string true "Username"
+// @Success 200 {object} utils.ApiResponse "Delete successful"
+// @Failure 400 {object} utils.ApiResponse "Delete failed"
+// @Router /user/admin/delete [get]
 func (uc *UserController) DeleteUser(c *gin.Context) {
 
 	//判断用户权限

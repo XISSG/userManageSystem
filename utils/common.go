@@ -1,6 +1,9 @@
 package utils
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/xissg/userManageSystem/model"
+)
 
 // 封装了全局返回信息
 const (
@@ -18,19 +21,12 @@ func Success(data interface{}, msg string) *gin.H {
 }
 
 func Error(code int, msg string) *gin.H {
+	return &gin.H{"code": code, "data": nil, "msg": msg}
+}
 
-	switch code {
-	case OPERATIONERR:
-		return &gin.H{"code": OPERATIONERR, "data": nil, "msg": msg}
-	case REGISTERERR:
-		return &gin.H{"code": REGISTERERR, "data": nil, "msg": msg}
-	case LOGINERR: //
-		return &gin.H{"code": LOGINERR, "data": nil, "msg": msg}
-	case PARAMSERR:
-		return &gin.H{"code": PARAMSERR, "data": nil, "msg": msg}
-	case AUTHERR:
-		return &gin.H{"code": AUTHERR, "data": nil, "msg": msg}
-	}
-
-	return &gin.H{"code": UNKNOWNERR, "data": nil, "msg": msg}
+// ApiResponse 用户生成swaggerapi文档
+type ApiResponse struct {
+	Code int              `json:"code"`
+	Data model.ResultUser `json:"data"`
+	Msg  string           `json:"msg"`
 }
