@@ -110,15 +110,16 @@ func NewServer() *gin.Engine {
 		v1.POST("/user/register", userController.Register)
 
 		v1.POST("/user/login", userController.Login)
-
 		v1.GET("/user/logout", userController.Logout)
 
 		v1.POST("/user/admin/update", userController.UpdateUser)
-
 		v1.GET("/user/admin/query/:username", userController.QueryUser)
-
 		v1.GET("/user/admin/delete/:username", userController.DeleteUser)
-		//v1.POST("/user/admin/match", userController.MatchUsers)
+
+		//v1.POST("/user/tags/add", userController.AddTags)
+		//v1.POST("/user/tags/match", userController.MatchUsersByTags)
+		//v1.POST("/user/tags/update", userController.UpdateTags)
+		//v1.POST("/user/tags/delete", userController.DeleteTags)
 	}
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

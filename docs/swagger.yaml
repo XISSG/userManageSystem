@@ -1,4 +1,12 @@
 definitions:
+  model.ApiResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
   model.ResultUser:
     properties:
       avatar_url:
@@ -19,15 +27,6 @@ definitions:
       user_role:
         description: 0为普通用户, 1为会员用户
         type: integer
-    type: object
-  utils.ApiResponse:
-    properties:
-      code:
-        type: integer
-      data:
-        $ref: '#/definitions/model.ResultUser'
-      msg:
-        type: string
     type: object
 info:
   contact: {}
@@ -51,11 +50,21 @@ paths:
         "200":
           description: Delete successful
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
         "400":
           description: Delete failed
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
       summary: Delete user by username
       tags:
       - User
@@ -76,11 +85,21 @@ paths:
         "200":
           description: Query successful
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ResultUser'
+              type: object
         "400":
           description: Query failed
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
       summary: Query user by username
       tags:
       - User
@@ -102,11 +121,21 @@ paths:
         "200":
           description: Login successful
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ResultUser'
+              type: object
         "400":
           description: Login failed
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
       summary: User login
       tags:
       - User
@@ -128,11 +157,21 @@ paths:
         "200":
           description: Logout successful
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
         "400":
           description: Logout failed
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
       summary: User logout
       tags:
       - User
@@ -154,11 +193,21 @@ paths:
         "200":
           description: Success registered
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ResultUser'
+              type: object
         "400":
           description: Registration failed
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
       summary: User registration
       tags:
       - User
@@ -180,11 +229,21 @@ paths:
         "200":
           description: Update successful
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
         "400":
           description: Update failed
           schema:
-            $ref: '#/definitions/utils.ApiResponse'
+            allOf:
+            - $ref: '#/definitions/model.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
       summary: User update
       tags:
       - User

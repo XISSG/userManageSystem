@@ -32,13 +32,37 @@
                     "200": {
                         "description": "Delete successful",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Delete failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -70,13 +94,37 @@
                     "200": {
                         "description": "Query successful",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.ResultUser"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Query failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -110,13 +158,37 @@
                     "200": {
                         "description": "Login successful",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.ResultUser"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Login failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -150,13 +222,37 @@
                     "200": {
                         "description": "Logout successful",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Logout failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -190,13 +286,37 @@
                     "200": {
                         "description": "Success registered",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.ResultUser"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Registration failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -230,13 +350,37 @@
                     "200": {
                         "description": "Update successful",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Update failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -244,6 +388,18 @@
         }
     },
     "definitions": {
+        "model.ApiResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
         "model.ResultUser": {
             "type": "object",
             "properties": {
@@ -270,20 +426,6 @@
                 "user_role": {
                     "description": "0为普通用户, 1为会员用户",
                     "type": "integer"
-                }
-            }
-        },
-        "utils.ApiResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {
-                    "$ref": "#/definitions/model.ResultUser"
-                },
-                "msg": {
-                    "type": "string"
                 }
             }
         }

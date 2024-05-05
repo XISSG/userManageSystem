@@ -28,14 +28,14 @@ func NewRWDService(m DBService, r CacheService) *RWDService {
 	}
 }
 
-func (rw *RWDService) Read(user model.User, ctx *gin.Context) (interface{}, error) {
-	result, err := rw.RedisService.GetUserByName(user.UserName, ctx)
+func (rwd *RWDService) GetUser(user model.User, ctx *gin.Context) (interface{}, error) {
+	result, err := rwd.RedisService.GetUserByName(user.UserName, ctx)
 	if err == redis.Nil {
-		result, err = rw.MysqlService.GetUserByName(user.UserName)
+		result, err = rwd.MysqlService.GetUserByName(user.UserName)
 		if err != nil {
 			return nil, err
 		}
-		_ = rw.RedisService.AddUser(result, ctx)
+		_ = rwd.RedisService.AddUser(result, ctx)
 		return result, nil
 	}
 	if err != nil {
@@ -44,55 +44,71 @@ func (rw *RWDService) Read(user model.User, ctx *gin.Context) (interface{}, erro
 	return result, nil
 }
 
-// Add 写服务，封装了对MySQL和redis的写服务
+// AddUser 写服务，封装了对MySQL和redis的写服务
 // 写逻辑写入MySQL的同时，写入redis缓存中
 // 写入情况：
 // MySQL写入失败
 // 直接返回失败
 // MySQL写入成功，redis写入失败
 // 返回成功
-func (rw *RWDService) Add(user model.User, ctx *gin.Context) error {
-	err := rw.MysqlService.AddUser(user)
+func (rwd *RWDService) AddUser(user model.User, ctx *gin.Context) error {
+	err := rwd.MysqlService.AddUser(user)
 	if err != nil {
 		return err
 	}
-	_ = rw.RedisService.AddUser(user, ctx)
+	_ = rwd.RedisService.AddUser(user, ctx)
 
 	return nil
 }
 
-// Update 更新服务，封装了对MySQL和redis的更新服务
+// UpdateUser 更新服务，封装了对MySQL和redis的更新服务
 // 更新逻辑写入MySQL的同时，写入redis缓存中
 // 写入情况：
 // MySQL更新失败
 // 直接返回失败
 // MySQL写入成功，redis写入失败
 // 返回成功
-func (rw *RWDService) Update(user model.User, ctx *gin.Context) error {
-	err := rw.MysqlService.UpdateUser(user)
+func (rwd *RWDService) UpdateUser(user model.User, ctx *gin.Context) error {
+	err := rwd.MysqlService.UpdateUser(user)
 	if err != nil {
 		return err
 	}
-	_ = rw.RedisService.UpdateUserInfo(user, ctx)
+	_ = rwd.RedisService.UpdateUserInfo(user, ctx)
 
 	return nil
 }
 
-// Delete 删除服务，封装了对MySQL和redis的删除服务
+// DeleteUser 删除服务，封装了对MySQL和redis的删除服务
 // 删除逻辑删除MySQL的同时，删除redis缓存
 // 删除情况：
 // MySQL删除失败或redis删除失败
 // 直接返回失败
 // MySQL删除成功，redis删除成功
 // 返回成功
-func (rw *RWDService) Delete(user model.User, ctx *gin.Context) error {
-	err := rw.MysqlService.DeleteUserByName(user.UserName)
+func (rwd *RWDService) DeleteUser(user model.User, ctx *gin.Context) error {
+	err := rwd.MysqlService.DeleteUserByName(user.UserName)
 	if err != nil {
 		return err
 	}
-	err = rw.RedisService.DeleteUserByName(user.UserName, ctx)
+	err = rwd.RedisService.DeleteUserByName(user.UserName, ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
+
+//func (rwd *RWDService) AddTags(tags model.Tags, ctx *gin.Context) error {
+//	return nil
+//}
+//
+//func (rwd *RWDService) GetTagsUsers(tags model.Tags, ctx *gin.Context) [][]model.Tags {
+//	return nil
+//}
+//
+//func (rwd *RWDService) UpdateTags(tags model.Tags, ctx *gin.Context) error {
+//	return nil
+//}
+//
+//func (rwd *RWDService) DeleteTags(tags model.Tags, ctx *gin.Context) error {
+//	return nil
+//}

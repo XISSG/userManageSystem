@@ -2,7 +2,6 @@ package utils
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/xissg/userManageSystem/model"
 )
 
 // 封装了全局返回信息
@@ -22,11 +21,4 @@ func Success(data interface{}, msg string) *gin.H {
 
 func Error(code int, msg string) *gin.H {
 	return &gin.H{"code": code, "data": nil, "msg": msg}
-}
-
-// ApiResponse 用户生成swaggerapi文档
-type ApiResponse struct {
-	Code int              `json:"code"`
-	Data model.ResultUser `json:"data"`
-	Msg  string           `json:"msg"`
 }

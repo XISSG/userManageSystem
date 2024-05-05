@@ -33,16 +33,31 @@ func NewUserController(userService service.DBService, redisService service.Cache
 	}
 }
 
+// 校验用户是否登录以及是否为admin用户
+func (uc *UserController) checkValidity(c *gin.Context) int {
+
+	userSession := uc.sessionService.GetSession(c)
+	if userSession.Role == ADMIN {
+		return ADMIN
+	}
+
+	if userSession.Role == LOGIN {
+		return LOGIN
+	}
+	return ANONYMOUS
+}
+
 // Register 用户注册
-// @Summary User registration
-// @Description Register a new user
-// @Tags User
-// @Accept json
-// @Produce json
-// @Param user body string true "User object"
-// @Success 200 {object} utils.ApiResponse "Success registered"
-// @Failure 400 {object} utils.ApiResponse "Registration failed"
-// @Router /user/register [post]
+//
+//	@Summary		User registration
+//	@Description	Register a new user
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		string										true	"User object"
+//	@Success		200		{object}	model.ApiResponse{data=model.ReturnUser}	"Success registered"
+//	@Failure		400		{object}	model.ApiResponse{data=nil}					"Registration failed"
+//	@Router			/user/register [post]
 func (uc *UserController) Register(c *gin.Context) {
 	var user model.User
 
@@ -60,7 +75,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	}
 
 	//校验用户名是否存在
-	_, err := uc.rwdService.Read(user, c)
+	_, err := uc.rwdService.GetUser(user, c)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "username repeated"))
 		log.Println("username repeated")
@@ -100,29 +115,30 @@ func (uc *UserController) Register(c *gin.Context) {
 	user.UpdateTime = time.Now().UTC()
 
 	//插入数据库
-	err = uc.rwdService.Add(user, c)
+	err = uc.rwdService.AddUser(user, c)
 	if err != nil {
 		log.Printf("create user failed")
 		return
 	}
 
-	var resultUser *model.ResultUser
+	var resultUser *model.ReturnUser
 	resultUser = model.UserProc(user)
 	//插入成功
-	c.JSON(http.StatusOK, utils.Success(resultUser, "register success"))
 	log.Printf("register success")
+	c.JSON(http.StatusOK, utils.Success(resultUser, "register success"))
 }
 
 // Login 用户登录
-// @Summary User login
-// @Description Authenticate user login
-// @Tags User
-// @Accept json
-// @Produce json
-// @Param user body string true "User object"
-// @Success 200 {object} utils.ApiResponse "Login successful"
-// @Failure 400 {object} utils.ApiResponse "Login failed"
-// @Router /user/login [post]
+//
+//	@Summary		User login
+//	@Description	Authenticate user login
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		string										true	"User object"
+//	@Success		200		{object}	model.ApiResponse{data=model.ReturnUser}	"Login successful"
+//	@Failure		400		{object}	model.ApiResponse{data=nil}					"Login failed"
+//	@Router			/user/login [post]
 func (uc *UserController) Login(c *gin.Context) {
 	var user model.User
 
@@ -143,7 +159,7 @@ func (uc *UserController) Login(c *gin.Context) {
 	user.UserPassword = utils.MD5Crypt(user.UserPassword)
 
 	//查询用户用户名和密码是否匹配
-	ret, err := uc.rwdService.Read(user, c)
+	ret, err := uc.rwdService.GetUser(user, c)
 	if ret == nil {
 		log.Println("The user has not registered yet")
 		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "The user has not registered yet"))
@@ -161,7 +177,6 @@ func (uc *UserController) Login(c *gin.Context) {
 		ID:       re.ID,
 		UserName: re.UserName,
 		Role:     re.UserRole,
-		Tags:     re.Tags,
 	}
 	err = uc.sessionService.NewOrUpdateSession(c, userSession)
 	if err != nil {
@@ -169,22 +184,23 @@ func (uc *UserController) Login(c *gin.Context) {
 		return
 	}
 
-	var resultUsers *model.ResultUser
+	var resultUsers *model.ReturnUser
 	resultUsers = model.UserProc(re)
 	log.Printf("login success")
 	c.JSON(http.StatusOK, utils.Success(resultUsers, "login success"))
 }
 
 // Logout 登出账户
-// @Summary User logout
-// @Description User logout
-// @Tags User
-// @Accept json
-// @Produce json
-// @Param user body string true "User object"
-// @Success 200 {object} utils.ApiResponse "Logout successful"
-// @Failure 400 {object} utils.ApiResponse "Logout failed"
-// @Router /user/logout [get]
+//
+//	@Summary		User logout
+//	@Description	User logout
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		string						true	"User object"
+//	@Success		200		{object}	model.ApiResponse{data=nil}	"Logout successful"
+//	@Failure		400		{object}	model.ApiResponse{data=nil}	"Logout failed"
+//	@Router			/user/logout [get]
 func (uc *UserController) Logout(c *gin.Context) {
 
 	//判断用户是否登录
@@ -207,15 +223,16 @@ func (uc *UserController) Logout(c *gin.Context) {
 }
 
 // QueryUser 查询用户
-// @Summary Query user by username
-// @Description Get user information by username
-// @Tags User
-// @Accept  json
-// @Produce  json
-// @Param username query string true "Username"
-// @Success 200 {object} utils.ApiResponse "Query successful"
-// @Failure 400 {object} utils.ApiResponse "Query failed"
-// @Router /user/admin/query [get]
+//
+//	@Summary		Query user by username
+//	@Description	Get user information by username
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			username	query		string										true	"Username"
+//	@Success		200			{object}	model.ApiResponse{data=model.ReturnUser}	"Query successful"
+//	@Failure		400			{object}	model.ApiResponse{data=nil}					"Query failed"
+//	@Router			/user/admin/query [get]
 func (uc *UserController) QueryUser(c *gin.Context) {
 	//判断用户权限
 	validity := uc.checkValidity(c)
@@ -236,7 +253,7 @@ func (uc *UserController) QueryUser(c *gin.Context) {
 	}
 
 	user.UserName = username
-	res, err := uc.rwdService.Read(user, c)
+	res, err := uc.rwdService.GetUser(user, c)
 	if err != nil {
 		return
 	}
@@ -247,15 +264,16 @@ func (uc *UserController) QueryUser(c *gin.Context) {
 }
 
 // UpdateUser 更新用户信息
-// @Summary User update
-// @Description Update user information
-// @Tags User
-// @Accept json
-// @Produce json
-// @Param user body string true "User object"
-// @Success 200 {object} utils.ApiResponse "Update successful"
-// @Failure 400 {object} utils.ApiResponse "Update failed"
-// @Router /user/update [post]
+//
+//	@Summary		User update
+//	@Description	UpdateUser user information
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		string						true	"User object"
+//	@Success		200		{object}	model.ApiResponse{data=nil}	"UpdateUser successful"
+//	@Failure		400		{object}	model.ApiResponse{data=nil}	"UpdateUser failed"
+//	@Router			/user/update [post]
 func (uc *UserController) UpdateUser(c *gin.Context) {
 	//判断用户权限
 	validity := uc.checkValidity(c)
@@ -274,7 +292,7 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 
 	usersession := uc.sessionService.GetSession(c)
 	user.UserName = usersession.UserName
-	err := uc.rwdService.Update(user, c)
+	err := uc.rwdService.UpdateUser(user, c)
 	if err != nil {
 		log.Printf("user info update  %v", err)
 		return
@@ -284,15 +302,16 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 }
 
 // DeleteUser 删除用户
-// @Summary Delete user by username
-// @Description Delete user information by username
-// @Tags User
-// @Accept  json
-// @Produce  json
-// @Param username query string true "Username"
-// @Success 200 {object} utils.ApiResponse "Delete successful"
-// @Failure 400 {object} utils.ApiResponse "Delete failed"
-// @Router /user/admin/delete [get]
+//
+//	@Summary		DeleteUser user by username
+//	@Description	DeleteUser user information by username
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			username	query		string						true	"Username"
+//	@Success		200			{object}	model.ApiResponse{data=nil}	"DeleteUser successful"
+//	@Failure		400			{object}	model.ApiResponse{data=nil}	"DeleteUser failed"
+//	@Router			/user/admin/delete [get]
 func (uc *UserController) DeleteUser(c *gin.Context) {
 
 	//判断用户权限
@@ -315,7 +334,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 	user.UserName = username
 
 	//逻辑删除用户
-	err := uc.rwdService.Delete(user, c)
+	err := uc.rwdService.DeleteUser(user, c)
 	if err != nil {
 		log.Printf("delete user  %v", err)
 		c.JSON(http.StatusBadRequest, utils.Error(utils.OPERATIONERR, err.Error()))
@@ -326,54 +345,15 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.Success(nil, "delete user success"))
 }
 
-// 校验用户是否登录以及是否为admin用户
-func (uc *UserController) checkValidity(c *gin.Context) int {
-
-	userSession := uc.sessionService.GetSession(c)
-	if userSession.Role == ADMIN {
-		return ADMIN
-	}
-
-	if userSession.Role == LOGIN {
-		return LOGIN
-	}
-	return ANONYMOUS
-}
-
-// MatchUsers  查询用户
-//func (uc *UserController) MatchUsers(c *gin.Context) {
+//func (uc *UserController) AddTags(c *gin.Context) {
 //
-//	//判断用户权限
-//	validity := uc.checkValidity(c)
-//	if validity != LOGIN {
-//		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "you must login first"))
-//		return
-//	}
+//}
+//func (uc *UserController) UpdateTags(c *gin.Context) {
 //
-//	var user model.User
+//}
+//func (uc *UserController) MatchUsersByTags(c *gin.Context) {
 //
-//	//反序列化取出JSON数据
-//	if err := c.ShouldBindJSON(&user); err != nil {
-//		log.Printf("JSON unmarshal  %v", err)
-//		return
-//	}
-//
-//	if user.Tags == "" {
-//		log.Printf("user tags is nil")
-//		c.JSON(http.StatusBadRequest, utils.Error(utils.PARAMSERR, "user tags is nil"))
-//		return
-//	}
-//	results, err := uc.userService.GetUsersByTags(user.Tags)
-//	if errors.Is(err, gorm.ErrRecordNotFound) {
-//		log.Println("No query users found")
-//		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "No match users"))
-//		return
-//	}
-//
-//	//查询结果处理
-//	rets := model.UsersProc(results)
-//
-//	log.Printf("query user success")
-//	c.JSON(http.StatusOK, utils.Success(rets, "query user success"))
+//}
+//func (uc *UserController) DeleteTags(c *gin.Context) {
 //
 //}

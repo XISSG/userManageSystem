@@ -39,7 +39,7 @@ func (us *MysqlService) AddUsers(users []model.User) error {
 	}
 	tx := us.db.Begin()
 	for user := range users {
-		if err := tx.Table("user").Create(&user).Error; err != nil {
+		if err = tx.Table("user").Create(&user).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -172,24 +172,58 @@ func (us *MysqlService) DeleteUserByName(name string) error {
 	return nil
 }
 
-// GetUsersByTags 根据查询条件返回用户列表
-func (us *MysqlService) GetUsersByTags(tags string) ([]model.User, error) {
-
-	var res []model.User
-	tx := us.db.Table("user").Where("tags = ?", tags, ALIVE).Find(&res)
-
-	return res, tx.Error
-
-}
-
-func (us *MysqlService) UpdateUserTags(user model.User) error {
-
-	tx := us.db.Begin()
-	res := tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("tags", user.Tags)
-	if res.Error != nil {
-		tx.Rollback()
-		return res.Error
-	}
-	tx.Commit()
-	return nil
-}
+// AddUserTags 添加用户标签
+//func (us *MysqlService) AddUserTags(tags model.Tags) error {
+//	err := us.db.AutoMigrate(&model.Tags{})
+//	tx := us.db.Begin()
+//	if err = tx.Table("tags").Create(&tags).Error;err != nil {
+//		tx.Rollback()
+//        return err
+//	}
+//	tx.Commit()
+//	return nil
+//}
+//
+//// GetUsersByTags 根据查询条件返回用户列表
+//func (us *MysqlService) GetUsersByTags(tags []string) ([]model.Tags, error) {
+//
+//	var res []model.Tags
+//	tx :=us.db.Table("tags").Where("tags = ?", tags).Find(&res)
+//	if tx.Error!= nil {
+//        return nil, tx.Error
+//    }
+//	return res, nil
+//}
+//
+//// UpdateUserTags 更新用户标签
+//func (us *MysqlService) UpdateUserTags(tags model.Tags) error {
+//	err := us.db.AutoMigrate(&model.Tags{})
+//	if err != nil {
+//		return err
+//	}
+//	tx := us.db.Begin()
+//	res := tx.Table("tags").Where("id = ?", tags.ID).Update("tags", tags)
+//	if res.Error != nil {
+//		tx.Rollback()
+//		return res.Error
+//	}
+//	tx.Commit()
+//	return nil
+//}
+//
+//// DeleteUserTags 删除用户标签
+//func (us *MysqlService) DeleteUserTags(tags []string) error {
+//
+//	err := us.db.AutoMigrate(&model.Tags{})
+//	if err != nil {
+//		return err
+//	}
+//	tx := us.db.Begin()
+//	res := tx.Where("tags = ?", tags).Delete(&model.Tags{})
+//	if res.Error != nil {
+//		tx.Rollback()
+//		return res.Error
+//	}
+//	tx.Commit()
+//	return nil
+//}

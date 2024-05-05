@@ -42,8 +42,7 @@ func (redisService *RedisService) AddUsers(users []model.User, ctx *gin.Context)
 	return nil
 }
 
-//获取用户信息
-
+// GetUserByName 获取用户信息
 func (redisService *RedisService) GetUserByName(name string, ctx *gin.Context) (model.User, error) {
 	resultJson, err := redisService.rdb.Get(ctx, name).Result()
 	if err != nil {
@@ -60,8 +59,7 @@ func (redisService *RedisService) GetUserByName(name string, ctx *gin.Context) (
 	return user, nil
 }
 
-//更新用户信息
-
+// UpdateUserInfo 更新用户信息
 func (redisService *RedisService) UpdateUserInfo(user model.User, ctx *gin.Context) error {
 	val, err := redisService.GetUserByName(user.UserName, ctx)
 	err = redisService.DeleteUserByName(user.UserName, ctx)
@@ -81,8 +79,7 @@ func (redisService *RedisService) UpdateUserInfo(user model.User, ctx *gin.Conte
 	return nil
 }
 
-//删除用户
-
+// DeleteUserByName 删除用户
 func (redisService *RedisService) DeleteUserByName(name string, ctx *gin.Context) error {
 	err := redisService.rdb.Del(ctx, name).Err()
 	if err != nil {
@@ -91,8 +88,77 @@ func (redisService *RedisService) DeleteUserByName(name string, ctx *gin.Context
 	return nil
 }
 
-// GetUsersByTags 匹配用户
-func (redisService *RedisService) GetUsersByTags(tags string, ctx *gin.Context) ([]model.User, error) {
-	//TODO:
-	return []model.User{}, nil
-}
+// AddUserTags 添加用户标签
+//func (redisService *RedisService) AddUserTags(tags model.Tags, ctx *gin.Context) error {
+//	tagsJson, err := json.Marshal(tags)
+//	if err != nil {
+//		return err
+//	}
+//	for _, tag := range tags.Tags {
+//		status := redisService.rdb.SAdd(ctx, tag, tagsJson, utils.RandomExpireTime())
+//		if status.Err() != nil {
+//			return status.Err()
+//		}
+//	}
+//	return nil
+//}
+//
+//// GetUsersByTag 返回符合特定标签的用户
+//func (redisService *RedisService) GetUsersByTag(tag string, ctx *gin.Context) ([]model.Tags, error) {
+//
+//	var result model.Tags
+//	var results []model.Tags
+//	resultsJson, err := redisService.rdb.SMembers(ctx, tag).Result()
+//
+//	for _, resultJson := range resultsJson {
+//
+//		err = json.Unmarshal([]byte(resultJson), &result)
+//		results = append(results, result)
+//		if err != nil {
+//			return nil, err
+//		}
+//	}
+//
+//	return results, nil
+//}
+//
+//// GetUsersByTags 获取所有标签的所有用户
+//func (redisService *RedisService) GetUsersByTags(tags []string, ctx *gin.Context) ([][]model.Tags, error) {
+//
+//	var results [][]model.Tags
+//	for _, tag := range tags {
+//		result, err := redisService.GetUsersByTag(tag, ctx)
+//		if err != nil {
+//			return nil, err
+//		}
+//		results = append(results, result)
+//	}
+//	return results, nil
+//}
+//
+//// UpdateUserTags 更新用户标签
+//func (redisService *RedisService) UpdateUserTags(oldTags, newTags model.Tags, ctx *gin.Context) error {
+//
+//	err := redisService.DeleteUserTags(oldTags, ctx)
+//	err = redisService.AddUserTags(newTags, ctx)
+//	if err != nil {
+//		return err
+//	}
+//	return nil
+//}
+//
+//// DeleteUserTags 删除用户标签
+//func (redisService *RedisService) DeleteUserTags(tags model.Tags, ctx *gin.Context) error {
+//
+//	for _, tag := range tags.Tags {
+//		resultJson, err := json.Marshal(tags)
+//		if err != nil {
+//			return err
+//		}
+//		status := redisService.rdb.SRem(ctx, tag, resultJson)
+//		if status.Err() != nil {
+//			return status.Err()
+//		}
+//	}
+//	return nil
+//}

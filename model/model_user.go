@@ -24,8 +24,6 @@ type User struct {
 	IsDelete bool `json:"is_delete" gorm:"column:is_delete;type:bool;size:1;default:false"`
 	// 0为匿名用户, 1为登录用户, 2为用户
 	UserRole int32 `json:"user_role" gorm:"column:user_role;type:int;size:32;default:0"`
-	//根据用户标签进行增删改查
-	Tags string `json:"tags" gorm:"column:tags"`
 }
 
 func (u User) TableName() string {
@@ -36,12 +34,11 @@ func (u User) TableName() string {
 type UserSession struct {
 	ID       int64  `json:"id"`
 	UserName string `json:"user_name"`
-	Tags     string `json:"tags"`
 	Role     int32  `json:"role"`
 }
 
-// ResultUser 返回结果数据
-type ResultUser struct {
+// ReturnUser 返回结果数据
+type ReturnUser struct {
 	// id
 	ID int64 `json:"id"`
 	// 用户昵称
@@ -57,8 +54,8 @@ type ResultUser struct {
 }
 
 // UserProc 将数据库中查询出来的数据进行筛选后返回
-func UserProc(u User) *ResultUser {
-	return &ResultUser{
+func UserProc(u User) *ReturnUser {
+	return &ReturnUser{
 		ID:          u.ID,
 		UserName:    u.UserName,
 		UserAccount: u.UserAccount,
@@ -69,8 +66,8 @@ func UserProc(u User) *ResultUser {
 }
 
 // UsersProc 将数据库中查询出来的数据进行筛选后返回
-func UsersProc(u []User) []*ResultUser {
-	result := make([]*ResultUser, len(u))
+func UsersProc(u []User) []*ReturnUser {
+	result := make([]*ReturnUser, len(u))
 	for i, v := range u {
 		result[i] = UserProc(v)
 	}

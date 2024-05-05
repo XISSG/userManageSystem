@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/user/admin/delete": {
             "get": {
-                "description": "Delete user information by username",
+                "description": "DeleteUser user information by username",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,7 +27,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Delete user by username",
+                "summary": "DeleteUser user by username",
                 "parameters": [
                     {
                         "type": "string",
@@ -39,15 +39,39 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Delete successful",
+                        "description": "DeleteUser successful",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Delete failed",
+                        "description": "DeleteUser failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -79,13 +103,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Query successful",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.ResultUser"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Query failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -119,13 +167,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Login successful",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.ResultUser"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Login failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -159,13 +231,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Logout successful",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Logout failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -199,13 +295,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Success registered",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.ResultUser"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Registration failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -213,7 +333,7 @@ const docTemplate = `{
         },
         "/user/update": {
             "post": {
-                "description": "Update user information",
+                "description": "UpdateUser user information",
                 "consumes": [
                     "application/json"
                 ],
@@ -237,15 +357,39 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Update successful",
+                        "description": "UpdateUser successful",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Update failed",
+                        "description": "UpdateUser failed",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -253,6 +397,18 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.ApiResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
         "model.ResultUser": {
             "type": "object",
             "properties": {
@@ -279,20 +435,6 @@ const docTemplate = `{
                 "user_role": {
                     "description": "0为普通用户, 1为会员用户",
                     "type": "integer"
-                }
-            }
-        },
-        "utils.ApiResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {
-                    "$ref": "#/definitions/model.ResultUser"
-                },
-                "msg": {
-                    "type": "string"
                 }
             }
         }

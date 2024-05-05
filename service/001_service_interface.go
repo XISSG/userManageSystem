@@ -8,14 +8,11 @@ import (
 // DBService Mysql服务的接口
 type DBService interface {
 	//添加用户
-
 	AddUser(user model.User) error
 	AddUsers(users []model.User) error
 
 	//获取用户信息
-
 	GetUserByName(name string) (model.User, error)
-	GetUsersByTags(tags string) ([]model.User, error)
 
 	//更新用户信息
 	UpdateUser(user model.User) error
@@ -24,32 +21,38 @@ type DBService interface {
 	UpdateUserPassword(user model.User) error
 	UpdateUserAvatar(user model.User) error
 	UpdateUserRole(user model.User) error
-	UpdateUserTags(user model.User) error
 
 	//删除用户
-
 	DeleteUserByName(name string) error
+
+	////用户标签
+	//AddUserTags(tags model.Tags) error
+	//GetUsersByTags(tags []string) ([]model.Tags, error)
+	//UpdateUserTags(tags model.Tags) error
+	//DeleteUserTags(tags []string) error
 }
 
 // CacheService Redis缓存服务的接口
 type CacheService interface {
 	//添加用户
-
 	AddUser(user model.User, ctx *gin.Context) error
 	AddUsers(users []model.User, ctx *gin.Context) error
 
 	//获取用户信息
-
 	GetUserByName(name string, ctx *gin.Context) (model.User, error)
-	GetUsersByTags(tags string, ctx *gin.Context) ([]model.User, error)
 
 	//更新用户信息
-
 	UpdateUserInfo(user model.User, ctx *gin.Context) error
 
 	//删除用户
-
 	DeleteUserByName(name string, ctx *gin.Context) error
+
+	////用户标签
+	//AddUserTags(tags model.Tags, ctx *gin.Context) error
+	//GetUsersByTag(tag string, ctx *gin.Context) ([]model.Tags, error)
+	//GetUsersByTags(tags []string, ctx *gin.Context) ([][]model.Tags, error)
+	//UpdateUserTags(oldTags, newTags model.Tags, ctx *gin.Context) error
+	//DeleteUserTags(tags model.Tags, ctx *gin.Context) error
 }
 
 // SessionService Session服务的接口
