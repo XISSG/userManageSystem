@@ -9,9 +9,5 @@ import (
 // @author		xissg
 func main() {
 
-	r := router.NewServer()
-
-	//开启服务器
-	r.Run(":8081")
-
+	router.NewServer()
 }

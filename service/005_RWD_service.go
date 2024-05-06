@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/xissg/userManageSystem/model"
+	"log"
+	"time"
 )
 
 //读服务封装了对redis和MySQL读服务
@@ -22,6 +24,7 @@ type RWDService struct {
 }
 
 func NewRWDService(m DBService, r CacheService) *RWDService {
+
 	return &RWDService{
 		MysqlService: m,
 		RedisService: r,
@@ -35,13 +38,17 @@ func (rwd *RWDService) GetUser(user model.User, ctx *gin.Context) (interface{}, 
 		if err != nil {
 			return nil, err
 		}
+
 		_ = rwd.RedisService.AddUser(result, ctx)
 		return result, nil
 	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	return result, nil
+
 }
 
 // AddUser 写服务，封装了对MySQL和redis的写服务
@@ -54,26 +61,86 @@ func (rwd *RWDService) GetUser(user model.User, ctx *gin.Context) (interface{}, 
 func (rwd *RWDService) AddUser(user model.User, ctx *gin.Context) error {
 	err := rwd.MysqlService.AddUser(user)
 	if err != nil {
+
 		return err
 	}
-	_ = rwd.RedisService.AddUser(user, ctx)
+
+	retryCount := 3
+	retryTime := time.Second * 2
+	for i := 0; i < retryCount; i++ {
+		err = rwd.RedisService.AddUser(user, ctx)
+		if err == nil {
+			break
+		}
+
+		time.Sleep(retryTime)
+	}
+
+	if err != nil {
+		log.Println("Redis add  failed")
+		return err
+	}
 
 	return nil
 }
 
-// UpdateUser 更新服务，封装了对MySQL和redis的更新服务
+// UpdateUserAll 更新服务，封装了对MySQL和redis的更新服务
 // 更新逻辑写入MySQL的同时，写入redis缓存中
 // 写入情况：
 // MySQL更新失败
 // 直接返回失败
 // MySQL写入成功，redis写入失败
 // 返回成功
-func (rwd *RWDService) UpdateUser(user model.User, ctx *gin.Context) error {
-	err := rwd.MysqlService.UpdateUser(user)
+func (rwd *RWDService) UpdateUserAll(user model.User, ctx *gin.Context) error {
+	err := rwd.MysqlService.UpdateUserAll(user)
 	if err != nil {
+
 		return err
 	}
-	_ = rwd.RedisService.UpdateUserInfo(user, ctx)
+
+	retryCount := 3
+	retryTime := time.Second * 2
+	for i := 0; i < retryCount; i++ {
+		err = rwd.RedisService.UpdateUserAll(user, ctx)
+		if err == nil {
+			break
+		}
+
+		time.Sleep(retryTime)
+	}
+
+	if err != nil {
+		log.Println("Redis cache update failed")
+
+		return err
+	}
+
+	return nil
+}
+
+func (rwd *RWDService) UpdateUserOne(column string, user model.User, ctx *gin.Context) error {
+	err := rwd.MysqlService.UpdateUserOne(column, user)
+	if err != nil {
+
+		return err
+	}
+
+	retryCount := 3
+	retryTime := time.Second * 2
+	for i := 0; i < retryCount; i++ {
+		err = rwd.RedisService.UpdateUserOne(column, user, ctx)
+		if err == nil {
+			break
+		}
+
+		time.Sleep(retryTime)
+	}
+
+	if err != nil {
+		log.Println("Redis cache update failed")
+
+		return err
+	}
 
 	return nil
 }
@@ -90,10 +157,24 @@ func (rwd *RWDService) DeleteUser(user model.User, ctx *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	err = rwd.RedisService.DeleteUserByName(user.UserName, ctx)
+
+	retryCount := 3
+	retryTime := time.Second * 2
+	for i := 0; i < retryCount; i++ {
+		err = rwd.RedisService.DeleteUserByName(user.UserName, ctx)
+		if err == nil {
+			break
+		}
+
+		time.Sleep(retryTime)
+	}
+
 	if err != nil {
+		log.Println("Redis cache update failed")
+
 		return err
 	}
+
 	return nil
 }
 

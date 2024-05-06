@@ -13,6 +13,7 @@ type SessionServiceImpl struct {
 }
 
 func NewSessionService(store redis.Store) *SessionServiceImpl {
+
 	return &SessionServiceImpl{
 		store: store,
 	}
@@ -29,6 +30,7 @@ func (us *SessionServiceImpl) NewOrUpdateSession(c *gin.Context, user model.User
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -40,8 +42,8 @@ func (us *SessionServiceImpl) GetSession(c *gin.Context) model.UserSession {
 	if sessionInfo == nil {
 		return model.UserSession{}
 	}
-	return sessionInfo.(model.UserSession)
 
+	return sessionInfo.(model.UserSession)
 }
 
 // DeleteSession 删除session
@@ -53,5 +55,6 @@ func (us *SessionServiceImpl) DeleteSession(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

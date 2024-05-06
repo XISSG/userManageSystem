@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/xissg/userManageSystem/model"
 	"gorm.io/gorm"
 )
@@ -25,9 +26,15 @@ func (us *MysqlService) AddUser(user model.User) error {
 	if err != nil {
 		return err
 	}
-	if err = us.db.Table("user").Create(&user).Error; err != nil {
+
+	tx := us.db.Begin()
+	if err = tx.Table("user").Create(&user).Error; err != nil {
+
+		tx.Rollback()
 		return err
 	}
+
+	tx.Commit()
 
 	return nil
 }
@@ -37,14 +44,18 @@ func (us *MysqlService) AddUsers(users []model.User) error {
 	if err != nil {
 		return err
 	}
+
 	tx := us.db.Begin()
 	for user := range users {
 		if err = tx.Table("user").Create(&user).Error; err != nil {
 			tx.Rollback()
+
 			return err
 		}
 	}
+
 	tx.Commit()
+
 	return nil
 }
 
@@ -55,38 +66,79 @@ func (us *MysqlService) GetUserByName(name string) (model.User, error) {
 	tx := us.db.Table("user").Where("user_name = ? AND is_delete = ?", name, ALIVE).First(&res)
 
 	return res, tx.Error
-
 }
 
 // UpdateUser 更新用户信息
-func (us *MysqlService) UpdateUser(user model.User) error {
+func (us *MysqlService) UpdateUserAll(user model.User) error {
 	err := us.db.AutoMigrate(&model.User{})
 	if err != nil {
 		return err
 	}
+
 	tx := us.db.Begin()
 	res := tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Select("user_account", "user_password", "avtar_url", "user_role").Updates(user)
 	if res.Error != nil {
 		tx.Rollback()
+
 		return res.Error
 	}
+
 	tx.Commit()
+
 	return nil
 }
 
+func (us *MysqlService) UpdateUserOne(column string, user model.User) error {
+
+	err := us.db.AutoMigrate(&model.User{})
+	if err != nil {
+		return err
+	}
+
+	var res *gorm.DB
+	tx := us.db.Begin()
+	switch column {
+	case "user_name":
+		res = tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("user_name", user.UserName)
+
+	case "user_account":
+		res = tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("user_account", user.UserAccount)
+	case "avatar_url":
+		res = tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("avatar_url", user.AvatarUrl)
+
+	case "user_role":
+		res = tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("user_role", user.UserRole)
+	default:
+		return errors.New("invalid column name")
+	}
+
+	if res.Error != nil {
+		tx.Rollback()
+
+		return res.Error
+	}
+
+	tx.Commit()
+
+	return nil
+}
 func (us *MysqlService) UpdateUserName(user model.User) error {
 
 	err := us.db.AutoMigrate(&model.User{})
 	if err != nil {
 		return err
 	}
+
 	tx := us.db.Begin()
 	res := tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("user_name", user.UserName)
 	if res.Error != nil {
 		tx.Rollback()
+
 		return res.Error
 	}
+
 	tx.Commit()
+
 	return nil
 }
 
@@ -96,13 +148,16 @@ func (us *MysqlService) UpdateUserAccount(user model.User) error {
 	if err != nil {
 		return err
 	}
+
 	tx := us.db.Begin()
 	res := tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("user_account", user.UserAccount)
 	if res.Error != nil {
 		tx.Rollback()
 		return res.Error
 	}
+
 	tx.Commit()
+
 	return nil
 }
 
@@ -112,13 +167,16 @@ func (us *MysqlService) UpdateUserPassword(user model.User) error {
 	if err != nil {
 		return err
 	}
+
 	tx := us.db.Begin()
 	res := tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("user_password", user.UserPassword)
 	if res.Error != nil {
 		tx.Rollback()
 		return res.Error
 	}
+
 	tx.Commit()
+
 	return nil
 }
 
@@ -135,7 +193,9 @@ func (us *MysqlService) UpdateUserAvatar(user model.User) error {
 		tx.Rollback()
 		return res.Error
 	}
+
 	tx.Commit()
+
 	return nil
 }
 
@@ -152,7 +212,9 @@ func (us *MysqlService) UpdateUserRole(user model.User) error {
 		tx.Rollback()
 		return res.Error
 	}
+
 	tx.Commit()
+
 	return nil
 }
 
@@ -162,13 +224,17 @@ func (us *MysqlService) DeleteUserByName(name string) error {
 	if err != nil {
 		return err
 	}
+
 	tx := us.db.Begin()
 	res := tx.Table("user").Where("user_name = ? AND is_delete = ?", name, ALIVE).Update("is_delete", DELETE)
 	if res.Error != nil {
 		tx.Rollback()
+
 		return res.Error
 	}
+
 	tx.Commit()
+
 	return nil
 }
 

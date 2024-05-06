@@ -15,12 +15,9 @@ type DBService interface {
 	GetUserByName(name string) (model.User, error)
 
 	//更新用户信息
-	UpdateUser(user model.User) error
+	UpdateUserAll(user model.User) error
+	UpdateUserOne(column string, user model.User) error
 	UpdateUserName(user model.User) error
-	UpdateUserAccount(user model.User) error
-	UpdateUserPassword(user model.User) error
-	UpdateUserAvatar(user model.User) error
-	UpdateUserRole(user model.User) error
 
 	//删除用户
 	DeleteUserByName(name string) error
@@ -42,8 +39,10 @@ type CacheService interface {
 	GetUserByName(name string, ctx *gin.Context) (model.User, error)
 
 	//更新用户信息
-	UpdateUserInfo(user model.User, ctx *gin.Context) error
+	UpdateUserAll(user model.User, ctx *gin.Context) error
 
+	//更新一条用户信息
+	UpdateUserOne(column string, user model.User, ctx *gin.Context) error
 	//删除用户
 	DeleteUserByName(name string, ctx *gin.Context) error
 

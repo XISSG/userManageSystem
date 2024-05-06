@@ -27,6 +27,7 @@ type UserController struct {
 }
 
 func NewUserController(userService service.DBService, redisService service.CacheService, sessionService service.SessionService) *UserController {
+
 	return &UserController{
 		sessionService: sessionService,
 		rwdService:     service.NewRWDService(userService, redisService),
@@ -35,15 +36,16 @@ func NewUserController(userService service.DBService, redisService service.Cache
 
 // 校验用户是否登录以及是否为admin用户
 func (uc *UserController) checkValidity(c *gin.Context) int {
-
 	userSession := uc.sessionService.GetSession(c)
 	if userSession.Role == ADMIN {
+
 		return ADMIN
 	}
 
 	if userSession.Role == LOGIN {
 		return LOGIN
 	}
+
 	return ANONYMOUS
 }
 
@@ -64,6 +66,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&user); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
+
 		return
 	}
 
@@ -71,6 +74,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	if len(user.UserName) < 4 || len(user.UserName) > 32 {
 		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "user name too short or too long"))
 		log.Printf("wrong user name length")
+
 		return
 	}
 
@@ -79,6 +83,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "username repeated"))
 		log.Println("username repeated")
+
 		return
 	}
 
@@ -86,6 +91,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	if len(user.UserPassword) < 8 || len(user.UserPassword) > 32 {
 		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "wrong password length"))
 		log.Printf("wrong password length")
+
 		return
 	}
 
@@ -96,6 +102,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	if !m {
 		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "Invalid password, At least one special character, lowercase and uppercase, is required"))
 		log.Printf("illegal user password")
+
 		return
 	}
 
@@ -106,11 +113,12 @@ func (uc *UserController) Register(c *gin.Context) {
 	id, err := utils.IdGenerator()
 	if err != nil {
 		log.Println(fmt.Sprintf("id generator %v", err))
+
 		return
 	}
-	user.ID = id.Int64()
 
 	//生成创建时间和更新时间
+	user.ID = id.Int64()
 	user.CreateTime = time.Now().UTC()
 	user.UpdateTime = time.Now().UTC()
 
@@ -118,12 +126,12 @@ func (uc *UserController) Register(c *gin.Context) {
 	err = uc.rwdService.AddUser(user, c)
 	if err != nil {
 		log.Printf("create user failed")
+
 		return
 	}
 
-	var resultUser *model.ReturnUser
-	resultUser = model.UserProc(user)
 	//插入成功
+	resultUser := model.UserProc(user)
 	log.Printf("register success")
 	c.JSON(http.StatusOK, utils.Success(resultUser, "register success"))
 }
@@ -145,6 +153,7 @@ func (uc *UserController) Login(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&user); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
+
 		return
 	}
 
@@ -152,6 +161,7 @@ func (uc *UserController) Login(c *gin.Context) {
 	if user.UserName == "" || user.UserPassword == "" {
 		log.Printf("username  or password  is empty")
 		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "username or password is empty"))
+
 		return
 	}
 
@@ -163,12 +173,15 @@ func (uc *UserController) Login(c *gin.Context) {
 	if ret == nil {
 		log.Println("The user has not registered yet")
 		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "The user has not registered yet"))
+
 		return
 	}
+
 	re := ret.(model.User)
 	if re.UserPassword != user.UserPassword {
 		log.Println("username or password is wrong")
 		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "username or password is wrong"))
+
 		return
 	}
 
@@ -178,9 +191,11 @@ func (uc *UserController) Login(c *gin.Context) {
 		UserName: re.UserName,
 		Role:     re.UserRole,
 	}
+
 	err = uc.sessionService.NewOrUpdateSession(c, userSession)
 	if err != nil {
 		log.Println(fmt.Sprintf("session create %v", err))
+
 		return
 	}
 
@@ -202,12 +217,12 @@ func (uc *UserController) Login(c *gin.Context) {
 //	@Failure		400		{object}	model.ApiResponse{data=nil}	"Logout failed"
 //	@Router			/user/logout [get]
 func (uc *UserController) Logout(c *gin.Context) {
-
 	//判断用户是否登录
 	validity := uc.checkValidity(c)
 	if validity == ANONYMOUS {
 		log.Printf("you must login first")
 		c.JSON(http.StatusBadRequest, utils.Error(utils.LOGINERR, "you must login first"))
+
 		return
 	}
 
@@ -215,6 +230,7 @@ func (uc *UserController) Logout(c *gin.Context) {
 	err := uc.sessionService.DeleteSession(c)
 	if err != nil {
 		log.Println(fmt.Sprintf("session delete %v", err))
+
 		return
 	}
 
@@ -239,6 +255,7 @@ func (uc *UserController) QueryUser(c *gin.Context) {
 
 	if validity != ADMIN {
 		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "you are not admin"))
+
 		return
 	}
 
@@ -249,18 +266,29 @@ func (uc *UserController) QueryUser(c *gin.Context) {
 	if username == "" {
 		log.Println("not a valid query username")
 		c.JSON(http.StatusBadRequest, utils.Error(utils.PARAMSERR, "not a valid query username"))
+
 		return
 	}
 
 	user.UserName = username
 	res, err := uc.rwdService.GetUser(user, c)
-	if err != nil {
+	if res == nil {
+		log.Println("query user not found")
+		c.JSON(http.StatusBadRequest, utils.Error(utils.PARAMSERR, "query user not found"))
+
 		return
 	}
+
+	if err != nil {
+		log.Println(fmt.Sprintf("query user %v", err))
+		c.JSON(http.StatusBadRequest, utils.Error(utils.OPERATIONERR, "query user error"))
+
+		return
+	}
+
 	ret := model.UserProc(res.(model.User))
 	log.Println("query user success")
 	c.JSON(http.StatusOK, utils.Success(ret, "query user success"))
-
 }
 
 // UpdateUser 更新用户信息
@@ -278,8 +306,10 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 	//判断用户权限
 	validity := uc.checkValidity(c)
 
-	if validity != ADMIN {
-		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "you are not admin"))
+	if validity == ANONYMOUS {
+		log.Printf("you are not login")
+		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "you are not login"))
+
 		return
 	}
 
@@ -287,16 +317,24 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&user); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
+
 		return
 	}
 
-	usersession := uc.sessionService.GetSession(c)
-	user.UserName = usersession.UserName
-	err := uc.rwdService.UpdateUser(user, c)
+	//普通用户只允许修改自己的信息
+	if validity == LOGIN {
+		sessionInfo := uc.sessionService.GetSession(c)
+		user.UserName = sessionInfo.UserName
+	}
+
+	//admin用户允许修改其他人的信息
+	err := uc.rwdService.UpdateUserAll(user, c)
 	if err != nil {
 		log.Printf("user info update  %v", err)
+
 		return
 	}
+
 	log.Printf("update user success")
 	c.JSON(http.StatusOK, utils.Success(nil, "update user success"))
 }
@@ -318,6 +356,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 	validity := uc.checkValidity(c)
 	if validity != ADMIN {
 		c.JSON(http.StatusBadRequest, utils.Error(utils.AUTHERR, "you are not validity user"))
+
 		return
 	}
 
@@ -328,6 +367,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 	if username == "" {
 		log.Println("not a valid query username")
 		c.JSON(http.StatusBadRequest, utils.Error(utils.PARAMSERR, "not a valid query username"))
+
 		return
 	}
 
@@ -338,6 +378,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 	if err != nil {
 		log.Printf("delete user  %v", err)
 		c.JSON(http.StatusBadRequest, utils.Error(utils.OPERATIONERR, err.Error()))
+
 		return
 	}
 

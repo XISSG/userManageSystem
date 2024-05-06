@@ -55,6 +55,7 @@ type ReturnUser struct {
 
 // UserProc 将数据库中查询出来的数据进行筛选后返回
 func UserProc(u User) *ReturnUser {
+
 	return &ReturnUser{
 		ID:          u.ID,
 		UserName:    u.UserName,
@@ -71,5 +72,6 @@ func UsersProc(u []User) []*ReturnUser {
 	for i, v := range u {
 		result[i] = UserProc(v)
 	}
+
 	return result
 }
