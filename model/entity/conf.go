@@ -1,4 +1,4 @@
-package model
+package entity
 
 type Config struct {
 	User     string `yaml:"user"`
@@ -7,11 +7,4 @@ type Config struct {
 	Port     int    `yaml:"port"`
 	Database string `yaml:"database"`
 	Secret   string `yaml:"secret"`
-}
-
-// ApiResponse 用户生成swagger文档
-type ApiResponse struct {
-	Code int         `json:"code"`
-	Data interface{} `json:"data"`
-	Msg  string      `json:"msg"`
 }

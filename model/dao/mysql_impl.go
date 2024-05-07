@@ -1,8 +1,8 @@
-package service
+package dao
 
 import (
 	"errors"
-	"github.com/xissg/userManageSystem/model"
+	"github.com/xissg/userManageSystem/model/entity"
 	"gorm.io/gorm"
 )
 
@@ -21,8 +21,8 @@ func NewUserService(db *gorm.DB) *MysqlService {
 }
 
 // AddUser 添加用户
-func (us *MysqlService) AddUser(user model.User) error {
-	err := us.db.AutoMigrate(&model.User{})
+func (us *MysqlService) AddUser(user entity.User) error {
+	err := us.db.AutoMigrate(&entity.User{})
 	if err != nil {
 		return err
 	}
@@ -39,8 +39,8 @@ func (us *MysqlService) AddUser(user model.User) error {
 	return nil
 }
 
-func (us *MysqlService) AddUsers(users []model.User) error {
-	err := us.db.AutoMigrate(&model.User{})
+func (us *MysqlService) AddUsers(users []entity.User) error {
+	err := us.db.AutoMigrate(&entity.User{})
 	if err != nil {
 		return err
 	}
@@ -60,17 +60,17 @@ func (us *MysqlService) AddUsers(users []model.User) error {
 }
 
 // GetUserByName  根据用户名返回查询用户
-func (us *MysqlService) GetUserByName(name string) (model.User, error) {
-	_ = us.db.AutoMigrate(&model.User{})
-	var res model.User
+func (us *MysqlService) GetUserByName(name string) (entity.User, error) {
+	_ = us.db.AutoMigrate(&entity.User{})
+	var res entity.User
 	tx := us.db.Table("user").Where("user_name = ? AND is_delete = ?", name, ALIVE).First(&res)
 
 	return res, tx.Error
 }
 
-// UpdateUser 更新用户信息
-func (us *MysqlService) UpdateUserAll(user model.User) error {
-	err := us.db.AutoMigrate(&model.User{})
+// UpdateUserAll  更新用户信息
+func (us *MysqlService) UpdateUserAll(user entity.UpdateUser) error {
+	err := us.db.AutoMigrate(&entity.User{})
 	if err != nil {
 		return err
 	}
@@ -88,9 +88,9 @@ func (us *MysqlService) UpdateUserAll(user model.User) error {
 	return nil
 }
 
-func (us *MysqlService) UpdateUserOne(column string, user model.User) error {
+func (us *MysqlService) UpdateUserOne(column string, user entity.UpdateUser) error {
 
-	err := us.db.AutoMigrate(&model.User{})
+	err := us.db.AutoMigrate(&entity.User{})
 	if err != nil {
 		return err
 	}
@@ -98,13 +98,14 @@ func (us *MysqlService) UpdateUserOne(column string, user model.User) error {
 	var res *gorm.DB
 	tx := us.db.Begin()
 	switch column {
-	case "user_name":
-		res = tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("user_name", user.UserName)
-
 	case "user_account":
 		res = tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("user_account", user.UserAccount)
+
 	case "avatar_url":
 		res = tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("avatar_url", user.AvatarUrl)
+
+	case "user_password":
+		res = tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("user_password", user.UserPassword)
 
 	case "user_role":
 		res = tx.Table("user").Where("user_name = ? AND is_delete = ?", user.UserName, ALIVE).Update("user_role", user.UserRole)
@@ -122,9 +123,9 @@ func (us *MysqlService) UpdateUserOne(column string, user model.User) error {
 
 	return nil
 }
-func (us *MysqlService) UpdateUserName(user model.User) error {
+func (us *MysqlService) UpdateUserName(user entity.User) error {
 
-	err := us.db.AutoMigrate(&model.User{})
+	err := us.db.AutoMigrate(&entity.User{})
 	if err != nil {
 		return err
 	}
@@ -143,8 +144,8 @@ func (us *MysqlService) UpdateUserName(user model.User) error {
 }
 
 // UpdateUserAccount 更新用户账户
-func (us *MysqlService) UpdateUserAccount(user model.User) error {
-	err := us.db.AutoMigrate(&model.User{})
+func (us *MysqlService) UpdateUserAccount(user entity.User) error {
+	err := us.db.AutoMigrate(&entity.User{})
 	if err != nil {
 		return err
 	}
@@ -162,8 +163,8 @@ func (us *MysqlService) UpdateUserAccount(user model.User) error {
 }
 
 // UpdateUserPassword 更新用户密码
-func (us *MysqlService) UpdateUserPassword(user model.User) error {
-	err := us.db.AutoMigrate(&model.User{})
+func (us *MysqlService) UpdateUserPassword(user entity.User) error {
+	err := us.db.AutoMigrate(&entity.User{})
 	if err != nil {
 		return err
 	}
@@ -181,8 +182,8 @@ func (us *MysqlService) UpdateUserPassword(user model.User) error {
 }
 
 // UpdateUserAvatar 更新用户头像
-func (us *MysqlService) UpdateUserAvatar(user model.User) error {
-	err := us.db.AutoMigrate(&model.User{})
+func (us *MysqlService) UpdateUserAvatar(user entity.User) error {
+	err := us.db.AutoMigrate(&entity.User{})
 	if err != nil {
 		return err
 	}
@@ -200,8 +201,8 @@ func (us *MysqlService) UpdateUserAvatar(user model.User) error {
 }
 
 // UpdateUserRole 更行用户权益
-func (us *MysqlService) UpdateUserRole(user model.User) error {
-	err := us.db.AutoMigrate(&model.User{})
+func (us *MysqlService) UpdateUserRole(user entity.User) error {
+	err := us.db.AutoMigrate(&entity.User{})
 	if err != nil {
 		return err
 	}
@@ -220,7 +221,7 @@ func (us *MysqlService) UpdateUserRole(user model.User) error {
 
 // DeleteUserByName  将isDelete字段设为 1 ,不进行实际删除
 func (us *MysqlService) DeleteUserByName(name string) error {
-	err := us.db.AutoMigrate(&model.User{})
+	err := us.db.AutoMigrate(&entity.User{})
 	if err != nil {
 		return err
 	}
@@ -237,59 +238,3 @@ func (us *MysqlService) DeleteUserByName(name string) error {
 
 	return nil
 }
-
-// AddUserTags 添加用户标签
-//func (us *MysqlService) AddUserTags(tags model.Tags) error {
-//	err := us.db.AutoMigrate(&model.Tags{})
-//	tx := us.db.Begin()
-//	if err = tx.Table("tags").Create(&tags).Error;err != nil {
-//		tx.Rollback()
-//        return err
-//	}
-//	tx.Commit()
-//	return nil
-//}
-//
-//// GetUsersByTags 根据查询条件返回用户列表
-//func (us *MysqlService) GetUsersByTags(tags []string) ([]model.Tags, error) {
-//
-//	var res []model.Tags
-//	tx :=us.db.Table("tags").Where("tags = ?", tags).Find(&res)
-//	if tx.Error!= nil {
-//        return nil, tx.Error
-//    }
-//	return res, nil
-//}
-//
-//// UpdateUserTags 更新用户标签
-//func (us *MysqlService) UpdateUserTags(tags model.Tags) error {
-//	err := us.db.AutoMigrate(&model.Tags{})
-//	if err != nil {
-//		return err
-//	}
-//	tx := us.db.Begin()
-//	res := tx.Table("tags").Where("id = ?", tags.ID).Update("tags", tags)
-//	if res.Error != nil {
-//		tx.Rollback()
-//		return res.Error
-//	}
-//	tx.Commit()
-//	return nil
-//}
-//
-//// DeleteUserTags 删除用户标签
-//func (us *MysqlService) DeleteUserTags(tags []string) error {
-//
-//	err := us.db.AutoMigrate(&model.Tags{})
-//	if err != nil {
-//		return err
-//	}
-//	tx := us.db.Begin()
-//	res := tx.Where("tags = ?", tags).Delete(&model.Tags{})
-//	if res.Error != nil {
-//		tx.Rollback()
-//		return res.Error
-//	}
-//	tx.Commit()
-//	return nil
-//}

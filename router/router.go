@@ -9,6 +9,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
+	"github.com/xissg/userManageSystem/model/dao"
+	"github.com/xissg/userManageSystem/model/entity"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
@@ -18,12 +20,11 @@ import (
 
 	"github.com/xissg/userManageSystem/controller"
 	"github.com/xissg/userManageSystem/middleware"
-	"github.com/xissg/userManageSystem/model"
 	"github.com/xissg/userManageSystem/service"
 )
 
 // read configuration from yaml config file
-func readConfig(database string) *model.Config {
+func readConfig(database string) *entity.Config {
 	viper.AddConfigPath("./conf")
 	viper.SetConfigName(database)
 	viper.SetConfigType("yaml")
@@ -33,7 +34,7 @@ func readConfig(database string) *model.Config {
 		panic(err)
 	}
 
-	var config *model.Config
+	var config *entity.Config
 	err = viper.Unmarshal(&config)
 	return config
 }
@@ -83,8 +84,8 @@ func initRedis() *redis.Client {
 // NewServer 开启服务器
 func NewServer() {
 	//注册序列化模型用户session对象存储
-	gob.Register(model.User{})
-	gob.Register(model.UserSession{})
+	gob.Register(entity.User{})
+	gob.Register(entity.UserSession{})
 
 	// 初始化gin引擎
 	r := gin.New()
@@ -101,10 +102,11 @@ func NewServer() {
 	r.Use(sessions.Sessions("session", store))
 
 	//注入依赖
-	sessionService := service.NewSessionService(store)
-	mysqlService := service.NewUserService(db)
-	redisService := service.NewRedisService(rdb)
-	userController := controller.NewUserController(mysqlService, redisService, sessionService)
+	sessionService := dao.NewSessionService(store)
+	mysqlService := dao.NewUserService(db)
+	redisService := dao.NewRedisService(rdb)
+	userService := service.NewUserService(mysqlService, redisService)
+	userController := controller.NewUserController(*userService, sessionService)
 
 	//开启定时任务
 	cronJob := service.NewCronJob(mysqlService, redisService)
@@ -115,7 +117,6 @@ func NewServer() {
 	//映射路由
 	v1 := r.Group("v1")
 	{
-
 		v1.POST("/user/register", userController.Register)
 
 		v1.POST("/user/login", userController.Login)
@@ -124,11 +125,6 @@ func NewServer() {
 		v1.POST("/user/update", userController.UpdateUser)
 		v1.GET("/user/admin/query/:username", userController.QueryUser)
 		v1.GET("/user/admin/delete/:username", userController.DeleteUser)
-
-		//v1.POST("/user/tags/add", userController.AddTags)
-		//v1.POST("/user/tags/match", userController.MatchUsersByTags)
-		//v1.POST("/user/tags/update", userController.UpdateTags)
-		//v1.POST("/user/tags/delete", userController.DeleteTags)
 	}
 
 	//设置swagger api文档路由

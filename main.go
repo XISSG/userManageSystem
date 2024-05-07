@@ -5,7 +5,7 @@ import (
 )
 
 // @title		用户管理系统
-// @version	0.1
+// @version		0.1
 // @author		xissg
 func main() {
 

@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"log"
+	"time"
 )
 
 type CronJob struct {
@@ -38,6 +39,6 @@ func (cron *CronJob) Start() {
 			log.Println("redis write error:", err)
 		}
 	}
-	log.Println("job done")
 
+	log.Println("job done", time.Now().String())
 }

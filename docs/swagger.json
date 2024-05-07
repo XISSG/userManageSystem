@@ -8,7 +8,7 @@
     "paths": {
         "/user/admin/delete": {
             "get": {
-                "description": "Delete user information by username",
+                "description": "DeleteUser user information by username",
                 "consumes": [
                     "application/json"
                 ],
@@ -18,7 +18,7 @@
                 "tags": [
                     "User"
                 ],
-                "summary": "Delete user by username",
+                "summary": "DeleteUser user by username",
                 "parameters": [
                     {
                         "type": "string",
@@ -30,11 +30,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Delete successful",
+                        "description": "DeleteUser successful",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -48,11 +48,11 @@
                         }
                     },
                     "400": {
-                        "description": "Delete failed",
+                        "description": "DeleteUser failed",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -96,13 +96,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.ResultUser"
+                                            "$ref": "#/definitions/model.ReturnUser"
                                         }
                                     }
                                 }
@@ -114,7 +114,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -160,13 +160,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.ResultUser"
+                                            "$ref": "#/definitions/model.ReturnUser"
                                         }
                                     }
                                 }
@@ -178,7 +178,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -224,7 +224,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -242,7 +242,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -288,13 +288,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.ResultUser"
+                                            "$ref": "#/definitions/model.ReturnUser"
                                         }
                                     }
                                 }
@@ -306,7 +306,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -324,7 +324,7 @@
         },
         "/user/update": {
             "post": {
-                "description": "Update user information",
+                "description": "UpdateUser user information",
                 "consumes": [
                     "application/json"
                 ],
@@ -348,11 +348,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Update successful",
+                        "description": "UpdateUser successful",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -366,11 +366,11 @@
                         }
                     },
                     "400": {
-                        "description": "Update failed",
+                        "description": "UpdateUser failed",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.ApiResponse"
+                                    "$ref": "#/definitions/utils.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -388,19 +388,7 @@
         }
     },
     "definitions": {
-        "model.ApiResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {},
-                "msg": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.ResultUser": {
+        "model.ReturnUser": {
             "type": "object",
             "properties": {
                 "avatar_url": {
@@ -426,6 +414,18 @@
                 "user_role": {
                     "description": "0为普通用户, 1为会员用户",
                     "type": "integer"
+                }
+            }
+        },
+        "utils.ApiResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
                 }
             }
         }

@@ -3,14 +3,14 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
-	"github.com/xissg/userManageSystem/model"
+	"github.com/xissg/userManageSystem/model/entity"
 	"log"
 	"time"
 )
 
 //读服务封装了对redis和MySQL读服务
 
-// RWDService 读逻辑，优先根据查询条件去redis进行读取，如果没有读取到数据则去MySQL中进行读取
+// UserService 读逻辑，优先根据查询条件去redis进行读取，如果没有读取到数据则去MySQL中进行读取
 // 读取情况:
 // redis读取成功：
 // 返回成功
@@ -18,28 +18,28 @@ import (
 // 将结果写入redis,返回成功
 // redis读取失败，mysql读取失败:
 // 返回失败
-type RWDService struct {
+type UserService struct {
 	MysqlService DBService
 	RedisService CacheService
 }
 
-func NewRWDService(m DBService, r CacheService) *RWDService {
+func NewUserService(m DBService, r CacheService) *UserService {
 
-	return &RWDService{
+	return &UserService{
 		MysqlService: m,
 		RedisService: r,
 	}
 }
 
-func (rwd *RWDService) GetUser(user model.User, ctx *gin.Context) (interface{}, error) {
-	result, err := rwd.RedisService.GetUserByName(user.UserName, ctx)
+func (userService *UserService) GetUser(username string, ctx *gin.Context) (interface{}, error) {
+	result, err := userService.RedisService.GetUserByName(username, ctx)
 	if err == redis.Nil {
-		result, err = rwd.MysqlService.GetUserByName(user.UserName)
+		result, err = userService.MysqlService.GetUserByName(username)
 		if err != nil {
 			return nil, err
 		}
 
-		_ = rwd.RedisService.AddUser(result, ctx)
+		_ = userService.RedisService.AddUser(result, ctx)
 		return result, nil
 	}
 
@@ -58,8 +58,8 @@ func (rwd *RWDService) GetUser(user model.User, ctx *gin.Context) (interface{}, 
 // 直接返回失败
 // MySQL写入成功，redis写入失败
 // 返回成功
-func (rwd *RWDService) AddUser(user model.User, ctx *gin.Context) error {
-	err := rwd.MysqlService.AddUser(user)
+func (userService *UserService) AddUser(user entity.User, ctx *gin.Context) error {
+	err := userService.MysqlService.AddUser(user)
 	if err != nil {
 
 		return err
@@ -68,7 +68,7 @@ func (rwd *RWDService) AddUser(user model.User, ctx *gin.Context) error {
 	retryCount := 3
 	retryTime := time.Second * 2
 	for i := 0; i < retryCount; i++ {
-		err = rwd.RedisService.AddUser(user, ctx)
+		err = userService.RedisService.AddUser(user, ctx)
 		if err == nil {
 			break
 		}
@@ -91,8 +91,8 @@ func (rwd *RWDService) AddUser(user model.User, ctx *gin.Context) error {
 // 直接返回失败
 // MySQL写入成功，redis写入失败
 // 返回成功
-func (rwd *RWDService) UpdateUserAll(user model.User, ctx *gin.Context) error {
-	err := rwd.MysqlService.UpdateUserAll(user)
+func (userService *UserService) UpdateUserAll(user entity.UpdateUser, ctx *gin.Context) error {
+	err := userService.MysqlService.UpdateUserAll(user)
 	if err != nil {
 
 		return err
@@ -101,7 +101,7 @@ func (rwd *RWDService) UpdateUserAll(user model.User, ctx *gin.Context) error {
 	retryCount := 3
 	retryTime := time.Second * 2
 	for i := 0; i < retryCount; i++ {
-		err = rwd.RedisService.UpdateUserAll(user, ctx)
+		err = userService.RedisService.UpdateUserAll(user, ctx)
 		if err == nil {
 			break
 		}
@@ -118,8 +118,8 @@ func (rwd *RWDService) UpdateUserAll(user model.User, ctx *gin.Context) error {
 	return nil
 }
 
-func (rwd *RWDService) UpdateUserOne(column string, user model.User, ctx *gin.Context) error {
-	err := rwd.MysqlService.UpdateUserOne(column, user)
+func (userService *UserService) UpdateUserOne(column string, user entity.UpdateUser, ctx *gin.Context) error {
+	err := userService.MysqlService.UpdateUserOne(column, user)
 	if err != nil {
 
 		return err
@@ -128,7 +128,7 @@ func (rwd *RWDService) UpdateUserOne(column string, user model.User, ctx *gin.Co
 	retryCount := 3
 	retryTime := time.Second * 2
 	for i := 0; i < retryCount; i++ {
-		err = rwd.RedisService.UpdateUserOne(column, user, ctx)
+		err = userService.RedisService.UpdateUserOne(column, user, ctx)
 		if err == nil {
 			break
 		}
@@ -152,8 +152,8 @@ func (rwd *RWDService) UpdateUserOne(column string, user model.User, ctx *gin.Co
 // 直接返回失败
 // MySQL删除成功，redis删除成功
 // 返回成功
-func (rwd *RWDService) DeleteUser(user model.User, ctx *gin.Context) error {
-	err := rwd.MysqlService.DeleteUserByName(user.UserName)
+func (userService *UserService) DeleteUser(username string, ctx *gin.Context) error {
+	err := userService.MysqlService.DeleteUserByName(username)
 	if err != nil {
 		return err
 	}
@@ -161,7 +161,7 @@ func (rwd *RWDService) DeleteUser(user model.User, ctx *gin.Context) error {
 	retryCount := 3
 	retryTime := time.Second * 2
 	for i := 0; i < retryCount; i++ {
-		err = rwd.RedisService.DeleteUserByName(user.UserName, ctx)
+		err = userService.RedisService.DeleteUserByName(username, ctx)
 		if err == nil {
 			break
 		}
@@ -177,19 +177,3 @@ func (rwd *RWDService) DeleteUser(user model.User, ctx *gin.Context) error {
 
 	return nil
 }
-
-//func (rwd *RWDService) AddTags(tags model.Tags, ctx *gin.Context) error {
-//	return nil
-//}
-//
-//func (rwd *RWDService) GetTagsUsers(tags model.Tags, ctx *gin.Context) [][]model.Tags {
-//	return nil
-//}
-//
-//func (rwd *RWDService) UpdateTags(tags model.Tags, ctx *gin.Context) error {
-//	return nil
-//}
-//
-//func (rwd *RWDService) DeleteTags(tags model.Tags, ctx *gin.Context) error {
-//	return nil
-//}

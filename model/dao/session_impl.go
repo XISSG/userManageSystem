@@ -1,10 +1,11 @@
-package service
+package dao
 
 import (
+	"errors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
-	"github.com/xissg/userManageSystem/model"
+	"github.com/xissg/userManageSystem/model/entity"
 	"time"
 )
 
@@ -19,7 +20,7 @@ func NewSessionService(store redis.Store) *SessionServiceImpl {
 	}
 }
 
-func (us *SessionServiceImpl) NewOrUpdateSession(c *gin.Context, user model.UserSession) error {
+func (us *SessionServiceImpl) NewOrUpdateSession(c *gin.Context, user entity.UserSession) error {
 	session := sessions.Default(c)
 
 	maxAge := int(time.Now().Add(time.Hour*24).UTC().Unix() - time.Now().UTC().Unix())
@@ -35,15 +36,15 @@ func (us *SessionServiceImpl) NewOrUpdateSession(c *gin.Context, user model.User
 }
 
 // GetSession 获取session
-func (us *SessionServiceImpl) GetSession(c *gin.Context) model.UserSession {
+func (us *SessionServiceImpl) GetSession(c *gin.Context) (entity.UserSession, error) {
 
 	session := sessions.Default(c)
 	sessionInfo := session.Get("user")
 	if sessionInfo == nil {
-		return model.UserSession{}
+		return entity.UserSession{}, errors.New("session not found")
 	}
 
-	return sessionInfo.(model.UserSession)
+	return sessionInfo.(entity.UserSession), nil
 }
 
 // DeleteSession 删除session

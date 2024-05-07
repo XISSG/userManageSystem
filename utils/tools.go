@@ -2,21 +2,12 @@ package utils
 
 import (
 	"crypto/md5"
-	"crypto/rand"
 	"encoding/hex"
-	"math/big"
+	"github.com/google/uuid"
 	rands "math/rand"
+	"strconv"
 	"time"
 )
-
-// IdGenerator 生成用户id
-func IdGenerator() (*big.Int, error) {
-	id, err := rand.Int(rand.Reader, big.NewInt(0xffffffff))
-	if err != nil {
-		return nil, err
-	}
-	return id, nil
-}
 
 // MD5Crypt 生成md5 hash
 func MD5Crypt(plainText string) string {
@@ -33,4 +24,9 @@ func RandomExpireTime() time.Duration {
 	maxExpire := time.Hour
 	expire := minExpire + time.Duration(rands.Int63n(int64(maxExpire-minExpire)))
 	return expire
+}
+
+func NewUuid() int64 {
+	uid, _ := strconv.Atoi(uuid.New().String())
+	return int64(uid)
 }

@@ -15,10 +15,55 @@ const (
 	SUCCESS      = 7000
 )
 
-func Success(data interface{}, msg string) *gin.H {
-	return &gin.H{"code": SUCCESS, "data": data, "msg": msg}
+// ApiResponse 用户生成swagger文档
+type ApiResponse struct {
+	Code int         `json:"code"`
+	Data interface{} `json:"data"`
+	Msg  string      `json:"msg"`
 }
 
-func Error(code int, msg string) *gin.H {
-	return &gin.H{"code": code, "data": nil, "msg": msg}
+func NewResponse(data interface{}, msg string) *ApiResponse {
+
+	return &ApiResponse{
+		Data: data,
+		Msg:  msg,
+	}
+}
+func (api *ApiResponse) Success() *gin.H {
+
+	api.Code = SUCCESS
+	return &gin.H{"code": api.Code, "data": api.Data, "msg": api.Msg}
+}
+
+func (api *ApiResponse) UnknownERR() *gin.H {
+
+	api.Code = UNKNOWNERR
+	return &gin.H{"code": api.Code, "data": api.Data, "msg": api.Msg}
+}
+func (api *ApiResponse) OperationERR() *gin.H {
+
+	api.Code = OPERATIONERR
+	return &gin.H{"code": api.Code, "data": api.Data, "msg": api.Msg}
+}
+func (api *ApiResponse) RegisterERR() *gin.H {
+
+	api.Code = REGISTERERR
+	return &gin.H{"code": api.Code, "data": api.Data, "msg": api.Msg}
+}
+
+func (api *ApiResponse) LoginERR() *gin.H {
+
+	api.Code = LOGINERR
+	return &gin.H{"code": api.Code, "data": api.Data, "msg": api.Msg}
+}
+
+func (api *ApiResponse) ParamsERR() *gin.H {
+
+	api.Code = PARAMSERR
+	return &gin.H{"code": api.Code, "data": api.Data, "msg": api.Msg}
+}
+func (api *ApiResponse) AuthERR() *gin.H {
+
+	api.Code = AUTHERR
+	return &gin.H{"code": api.Code, "data": api.Data, "msg": api.Msg}
 }
