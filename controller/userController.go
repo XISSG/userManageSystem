@@ -5,124 +5,83 @@ import (
 	"fmt"
 	"github.com/dlclark/regexp2"
 	"github.com/gin-gonic/gin"
-	"github.com/xissg/userManageSystem/model/entity"
+	"github.com/xissg/userManageSystem/constant"
+	"github.com/xissg/userManageSystem/entity/modeluser"
 	"github.com/xissg/userManageSystem/service"
+	"github.com/xissg/userManageSystem/service/redis"
 	"github.com/xissg/userManageSystem/utils"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
 )
 
-// 用户的登录状态
-const (
-	ANONYMOUS = iota
-	COMMON
-	ADMIN //user_role 字段判断是否为admin用户
-)
-
 type UserController struct {
-	sessionService service.SessionService
+	sessionService *redis.SessionService
 	userService    *service.UserService
 }
 
-func NewUserController(userService service.UserService, sessionService service.SessionService) *UserController {
+func NewUserController(userService service.UserService, sessionService redis.SessionService) *UserController {
 
 	return &UserController{
-		sessionService: sessionService,
+		sessionService: &sessionService,
 		userService:    &userService,
 	}
 }
 
-// 校验用户是否登录以及是否为admin用户
-func (uc *UserController) checkValidity(c *gin.Context) (int, entity.UserSession) {
-	userSession, err := uc.sessionService.GetSession(c)
-	if err != nil {
-		return ANONYMOUS, entity.UserSession{}
-	}
-	if userSession.Role == ADMIN {
-
-		return ADMIN, userSession
-	}
-
-	return COMMON, userSession
-}
-
 // Register 用户注册
 //
-//	@Summary		User registration
+//	@Summary		User register
 //	@Description	Register a new user
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			user	body		string										true	"User object"
-//	@Success		200		{object}	utils.apiResponse{data=model.ReturnUser}	"Success registered"
-//	@Failure		400		{object}	utils.apiResponse{data=nil}					"Registration failed"
-//	@Router			/user/register [post]
+//	@Param			user	body		modeluser.AddUserRequest	true	"User Information"
+//	@Success		200		{object}	utils.ApiResponse{data=nil}	"Success registered"
+//	@Failure		404		{object}	utils.ApiResponse{data=nil}	"Register failed"
+//	@Router			/api/user/register  [post]
 func (uc *UserController) Register(c *gin.Context) {
-	var receiveUser entity.AddUser
+	var receiveUser modeluser.AddUserRequest
 
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&receiveUser); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
 
 		return
 	}
 
-	//校验用户名长度
-	if len(receiveUser.UserName) < 4 || len(receiveUser.UserName) > 32 {
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "receiveUser name too short or too long").LoginERR())
-		log.Printf("wrong receiveUser name length")
+	//校验字段合法性
+	err := uc.checkUser(receiveUser.UserAccount, receiveUser.UserPassword)
+	if err != nil {
+		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+		log.Printf("validate %v", err)
 
 		return
 	}
 
-	//校验密码长度
-	if len(receiveUser.UserPassword) < 8 || len(receiveUser.UserPassword) > 32 {
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "wrong password length").LoginERR())
-		log.Printf("wrong password length")
-
-		return
-	}
-
-	//校验密码合法性
-	expr := `^(?![0-9a-zA-Z]+$)(?![a-zA-Z!@#$%^&*]+$)(?![0-9!@#$%^&*]+$)[0-9A-Za-z!@#$%^&*]{8,16}$`
-	reg, _ := regexp2.Compile(expr, 0)
-	m, _ := reg.MatchString(receiveUser.UserPassword)
-	if !m {
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "Invalid password, At least one special character, lowercase and uppercase, is required").LoginERR())
-		log.Printf("illegal receiveUser password")
-
-		return
-	}
-
-	//校验用户名是否存在
-	_, err := uc.userService.GetUser(receiveUser.UserName, c)
+	//校验账户是否存在
+	_, err = uc.userService.GetUser(receiveUser.UserAccount, c)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "username repeated").LoginERR())
-		log.Println("username repeated")
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "user account repeated").LoginERR())
+		log.Println("user account repeated")
 
 		return
 	}
-
-	//用户密码脱敏
-	receiveUser.UserPassword = utils.MD5Crypt(receiveUser.UserPassword)
 
 	//生成用户
-	var user entity.User
-	user = entity.AddUserToUser(receiveUser)
+	var user modeluser.User
+	user = modeluser.AddUserToUser(receiveUser)
 
 	//插入数据库
 	err = uc.userService.AddUser(user, c)
 	if err != nil {
-		log.Printf("create receiveUser failed")
+		log.Printf("create user failed")
 
 		return
 	}
 
-	//插入成功
-	resultUser := entity.SafetyUser(user)
 	log.Printf("register success")
-	c.JSON(http.StatusOK, utils.NewResponse(resultUser, "register success").Success())
+	c.JSON(http.StatusOK, utils.NewResponse(nil, "register success").Success())
 
 }
 
@@ -133,58 +92,56 @@ func (uc *UserController) Register(c *gin.Context) {
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			user	body		string										true	"User object"
-//	@Success		200		{object}	utils.apiResponse{data=model.ReturnUser}	"Login successful"
-//	@Failure		400		{object}	utils.apiResponse{data=nil}					"Login failed"
-//	@Router			/user/login [post]
+//	@Param			user	body		modeluser.LoginUserRequest						true	"User Information"
+//	@Success		200		{object}	utils.ApiResponse{data=modeluser.ReturnUser}	"Common successful"
+//	@Failure		404		{object}	utils.ApiResponse{data=nil}						"Common failed"
+//	@Router			/api/user/login     [post]
 func (uc *UserController) Login(c *gin.Context) {
-	var user entity.LoginUser
+	var loginUser modeluser.LoginUserRequest
 
 	//反序列化取出JSON数据
-	if err := c.ShouldBindJSON(&user); err != nil {
+	if err := c.ShouldBindJSON(&loginUser); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
 
 		return
 	}
 
-	//判断用户名和密码是否为空
-	if user.UserName == "" || user.UserPassword == "" {
-		log.Printf("username  or password  is empty")
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "username or password is empty").LoginERR())
-
+	//验证字段合法性
+	err := uc.checkUser(loginUser.UserAccount, loginUser.UserPassword)
+	if err != nil {
+		log.Printf("%v invalid user account or password", err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
 		return
 	}
 
-	//用户密码加密
-	user.UserPassword = utils.MD5Crypt(user.UserPassword)
-
-	//查询用户用户名和密码是否匹配
-	ret, err := uc.userService.GetUser(user.UserName, c)
-	if ret == nil {
+	user := modeluser.LoginUserToUser(loginUser)
+	//查询用户账户和密码是否匹配
+	ret, err := uc.userService.GetUser(user.UserAccount, c)
+	if ret.UserAccount == "" {
 		log.Println("The user has not registered yet")
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "The user has not registered yet").AuthERR())
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "The user has not registered yet").AuthERR())
 
 		return
 	}
 
-	re := ret.(entity.User)
-	if re.UserPassword != user.UserPassword {
+	//禁用的账号
+	if ret.UserRole == constant.Ban {
+		log.Println("The user has been banned")
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "The user has been banned").AuthERR())
+
+		return
+	}
+
+	if ret.UserPassword != user.UserPassword {
 		log.Println("username or password is wrong")
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "username or password is wrong").AuthERR())
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "username or password is wrong").AuthERR())
 
 		return
 	}
 
 	//登录成功, 存储session信息
-	if re.UserRole == ANONYMOUS {
-		re.UserRole = COMMON
-	}
-	userSession := entity.UserSession{
-		ID:       re.ID,
-		UserName: re.UserName,
-		Role:     re.UserRole,
-	}
-
+	userSession := modeluser.UserToUserSession(ret)
 	err = uc.sessionService.NewOrUpdateSession(c, userSession)
 	if err != nil {
 		log.Println(fmt.Sprintf("session create %v", err))
@@ -192,8 +149,10 @@ func (uc *UserController) Login(c *gin.Context) {
 		return
 	}
 
+	//插入成功
+	resultUser := modeluser.UserToReturnUser(ret)
 	log.Printf("login success")
-	c.JSON(http.StatusOK, utils.NewResponse(nil, "login success").Success())
+	c.JSON(http.StatusOK, utils.NewResponse(resultUser, "login success").Success())
 }
 
 // Logout 登出账户
@@ -201,18 +160,16 @@ func (uc *UserController) Login(c *gin.Context) {
 //	@Summary		User logout
 //	@Description	User logout
 //	@Tags			User
-//	@Accept			json
 //	@Produce		json
-//	@Param			user	body		string						true	"User object"
-//	@Success		200		{object}	utils.apiResponse{data=nil}	"Logout successful"
-//	@Failure		400		{object}	utils.apiResponse{data=nil}	"Logout failed"
-//	@Router			/user/logout [get]
+//	@Success		200	{object}	utils.ApiResponse{data=nil}	"Logout successful"
+//	@Failure		404	{object}	utils.ApiResponse{data=nil}	"Logout failed"
+//	@Router			/api/user/logout    [get]
 func (uc *UserController) Logout(c *gin.Context) {
 	//判断用户是否登录
-	validity, _ := uc.checkValidity(c)
-	if validity == ANONYMOUS {
+	validity, _ := uc.sessionService.GetSession(c)
+	if validity.UserRole == constant.Anonymous {
 		log.Printf("you must login first")
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "you must login first").LoginERR())
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "you must login first").LoginERR())
 
 		return
 	}
@@ -229,114 +186,230 @@ func (uc *UserController) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.NewResponse(nil, "logout success").Success())
 }
 
-// QueryUser 查询用户
+// QueryUserList 查询用户列表
 //
-//	@Summary		Query user by username
-//	@Description	Get user information by username
+//	@Summary		Query user
+//	@Description	Get user information
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			username	query		string										true	"Username"
-//	@Success		200			{object}	utils.apiResponse{data=model.ReturnUser}	"Query successful"
-//	@Failure		400			{object}	utils.apiResponse{data=nil}					"Query failed"
-//	@Router			/user/admin/query [get]
-func (uc *UserController) QueryUser(c *gin.Context) {
+//	@Param			user	body		modeluser.UserQueryRequest						true	"queries"
+//	@Success		200		{object}	utils.ApiResponse{data=[]modeluser.ReturnUser}	"Query successful"
+//	@Failure		404		{object}	utils.ApiResponse{data=nil}						"Query failed"
+//	@Router			/api/user/query [post]
+func (uc *UserController) QueryUserList(c *gin.Context) {
 	//判断用户权限
-	validity, _ := uc.checkValidity(c)
+	validity, _ := uc.sessionService.GetSession(c)
 
-	if validity != ADMIN {
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "you are not admin").AuthERR())
+	if validity.UserRole == constant.Anonymous || validity.UserRole == constant.Ban {
+		log.Printf("you must login first")
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "you must login first").LoginERR())
+
+		return
+	}
+	var queryRequest modeluser.UserQueryRequest
+	user := modeluser.UserQueryToUser(queryRequest)
+	err := uc.checkQueryOrUpdateUser(user)
+	if err != nil {
+		log.Printf("validate %v", err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+		return
+	}
+	//反序列化取出JSON数据
+	if err := c.ShouldBindJSON(&queryRequest); err != nil {
+		log.Printf("JSON unmarshal  %v", err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
 
 		return
 	}
 
-	//获取username参数的值
-	username := c.Param("username")
-	if username == "" {
-		log.Println("not a valid query username")
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "not a valid query username").ParamsERR())
+	commonQuery := modeluser.UserQueryToCommonQuery(queryRequest)
+	res, err := uc.userService.MysqlService.GetUserList(commonQuery)
+	if err != nil {
+		log.Println(fmt.Sprintf("query user %v", err))
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "query user error").OperationERR())
 
 		return
 	}
 
-	res, err := uc.userService.GetUser(username, c)
-	if res == nil {
-		log.Println("query user not found")
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "query user not found").ParamsERR())
+	ret := modeluser.UsersToReturnUsers(res)
+	log.Println("query users success")
+	c.JSON(http.StatusOK, utils.NewResponse(ret, "query users success").Success())
+}
+
+// AdminQueryUserList 查询用户列表
+//
+//	@Summary		Query user list for admin
+//	@Description	Query user list for admin
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		modeluser.AdminUserQueryRequest							true	"queries"
+//	@Success		200		{object}	utils.ApiResponse{data=[]modeluser.ReturnAdminUser}	"Query successful"
+//	@Failure		404		{object}	utils.ApiResponse{data=nil}							"Query failed"
+//	@Router			/api/user/admin/query [post]
+func (uc *UserController) AdminQueryUserList(c *gin.Context) {
+	//判断用户权限
+	validity, _ := uc.sessionService.GetSession(c)
+	if validity.UserRole != constant.Admin {
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not admin").AuthERR())
 
 		return
 	}
+	var adminQuery modeluser.AdminUserQueryRequest
+
+	//反序列化取出JSON数据
+	if err := c.ShouldBindJSON(&adminQuery); err != nil {
+		log.Printf("JSON unmarshal  %v", err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
+
+		return
+	}
+
+	//数据校验
+	query := modeluser.AdminUserQueryToUser(adminQuery)
+	err := uc.checkQueryOrUpdateUser(query)
+	if err != nil {
+		log.Printf("validate %v", err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+
+		return
+	}
+
+	res, err := uc.userService.MysqlService.GetUserList(adminQuery)
 
 	if err != nil {
 		log.Println(fmt.Sprintf("query user %v", err))
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "query user error").OperationERR())
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "query user error").OperationERR())
 
 		return
 	}
 
-	ret := entity.SafetyUser(res.(entity.User))
-	log.Println("query user success")
-	c.JSON(http.StatusOK, utils.NewResponse(ret, "query user success").Success())
+	result := modeluser.UsersToAdminReturnUsers(res)
+	log.Println("query users success")
+	c.JSON(http.StatusOK, utils.NewResponse(result, "query users success").Success())
 }
 
 // UpdateUser 更新用户信息
 //
 //	@Summary		User update
-//	@Description	UpdateUser user information
+//	@Description	Update user information
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			user	body		string						true	"User object"
-//	@Success		200		{object}	utils.apiResponse{data=nil}	"UpdateUser successful"
-//	@Failure		400		{object}	utils.apiResponse{data=nil}	"UpdateUser failed"
-//	@Router			/user/update [post]
+//	@Param			user	body		modeluser.UpdateUserRequest	true	"User Information"
+//	@Success		200		{object}	utils.ApiResponse{data=nil}	"UpdateUserRequest successful"
+//	@Failure		404		{object}	utils.ApiResponse{data=nil}	"UpdateUserRequest failed"
+//	@Router			/api/user/update    [post]
 func (uc *UserController) UpdateUser(c *gin.Context) {
 	//判断用户权限
-	validity, userSession := uc.checkValidity(c)
+	validity, _ := uc.sessionService.GetSession(c)
 
-	if validity == ANONYMOUS {
+	if validity.UserRole != constant.Common && validity.UserRole != constant.Admin {
 		log.Printf("you are not login")
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "you are not login").AuthERR())
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not login").AuthERR())
 
 		return
 	}
 
-	var user entity.UpdateUser
+	var updateUser modeluser.UpdateUserRequest
 	//反序列化取出JSON数据
-	if err := c.ShouldBindJSON(&user); err != nil {
+	if err := c.ShouldBindJSON(&updateUser); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
 
 		return
 	}
 
-	//密码要加密
-	if user.UserPassword != "" {
-		user.UserPassword = utils.MD5Crypt(user.UserPassword)
+	//校验字段
+	var old modeluser.User
+	update := modeluser.UpdateUserToUser(old, updateUser)
+	err := uc.checkQueryOrUpdateUser(update)
+	if err != nil {
+		log.Printf("validate %v", err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+
+		return
 	}
 
-	//普通用户只允许修改自己的信息
-	if validity != ADMIN {
-		user.UserName = userSession.UserName
+	//更新用户信息
+	oldInfo, err := uc.userService.GetUser(validity.UserAccount, c)
+	if err != nil {
+		log.Println(fmt.Sprintf("query user %v", err))
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "query user error").OperationERR())
+
+		return
+	}
+	user := modeluser.UpdateUserToUser(oldInfo, updateUser)
+	err = uc.userService.UpdateUserInfo(user, c)
+	if err != nil {
+		log.Println(fmt.Sprintf("update user %v", err))
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "update user error").OperationERR())
+
+		return
 	}
 
-	count, column := entity.CountParams(user)
-	if count > 1 {
-		//admin用户允许修改其他人的信息
-		err := uc.userService.UpdateUserAll(user, c)
-		if err != nil {
-			log.Printf("user info update  %v", err)
+	log.Printf("update modeluser success")
+	c.JSON(http.StatusOK, utils.NewResponse(nil, "update user success").Success())
+}
 
-			return
-		}
+// EditUser 更新用户信息
+//
+//	@Summary		admin edit user information
+//	@Description	admin edit user information
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		modeluser.EditUserRequest	true	"User Information"
+//	@Success		200		{object}	utils.ApiResponse{data=nil}	"EditUserRequest successful"
+//	@Failure		404		{object}	utils.ApiResponse{data=nil}	"EditUserRequest failed"
+//	@Router			/api/user/admin/update    [post]
+func (uc *UserController) EditUser(c *gin.Context) {
+	//判断用户权限
+	validity, _ := uc.sessionService.GetSession(c)
+	if validity.UserRole != constant.Admin {
+		log.Printf("you are not admin")
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not admin").AuthERR())
+
+		return
 	}
 
-	if count == 1 {
-		err := uc.userService.UpdateUserOne(column, user, c)
-		if err != nil {
-			log.Printf("user info update  %v", err)
+	var editUser modeluser.EditUserRequest
+	//反序列化取出JSON数据
+	if err := c.ShouldBindJSON(&editUser); err != nil {
+		log.Printf("JSON unmarshal  %v", err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
 
-			return
-		}
+		return
+	}
+
+	//数据校验
+	var old modeluser.User
+	edit := modeluser.EditUserToUser(old, editUser)
+	err := uc.checkQueryOrUpdateUser(edit)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+
+		return
+	}
+
+	//获取原始信息
+	oldInfo, err := uc.userService.GetUser(editUser.UserAccount, c)
+	if err != nil {
+		log.Println(fmt.Sprintf("no such user %v", err))
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "no such user").OperationERR())
+		return
+	}
+
+	//更新用户信息
+	user := modeluser.EditUserToUser(oldInfo, editUser)
+	err = uc.userService.UpdateUserInfo(user, c)
+	if err != nil {
+		log.Println(fmt.Sprintf("update user %v", err))
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "update user error").OperationERR())
+
+		return
 	}
 
 	log.Printf("update user success")
@@ -345,43 +418,101 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 
 // DeleteUser 删除用户
 //
-//	@Summary		DeleteUser user by username
-//	@Description	DeleteUser user information by username
+//	@Summary		DeleteUser user by user account
+//	@Description	DeleteUser user information by user account
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			username	query		string						true	"Username"
-//	@Success		200			{object}	utils.apiResponse{data=nil}	"DeleteUser successful"
-//	@Failure		400			{object}	utils.apiResponse{data=nil}	"DeleteUser failed"
-//	@Router			/user/admin/delete [get]
+//	@Param			user	path		string						true	"Useraccount"
+//	@Success		200		{object}	utils.ApiResponse{data=nil}	"DeleteUser successful"
+//	@Failure		404		{object}	utils.ApiResponse{data=nil}	"DeleteUser failed"
+//	@Router			/api/user/admin/delete [get]
 func (uc *UserController) DeleteUser(c *gin.Context) {
 
 	//判断用户权限
-	validity, _ := uc.checkValidity(c)
-	if validity != ADMIN {
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "you are not validity user").AuthERR())
+	validity, _ := uc.sessionService.GetSession(c)
+	if validity.UserRole != constant.Admin {
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not validity user").AuthERR())
 
 		return
 	}
 
-	//获取username参数的值
-	username := c.Param("username")
-	if username == "" {
-		log.Println("not a valid query username")
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, "not a valid query username").ParamsERR())
+	//获取useraccount参数的值
+	userAccount := c.Param("useraccount")
+	if userAccount == "" {
+		log.Println("not a valid query user account")
+		c.JSON(http.StatusOK, utils.NewResponse(nil, "not a valid query account").ParamsERR())
 
 		return
 	}
 
 	//逻辑删除用户
-	err := uc.userService.DeleteUser(username, c)
+	err := uc.userService.DeleteUser(userAccount, c)
 	if err != nil {
 		log.Printf("delete user  %v", err)
-		c.JSON(http.StatusBadRequest, utils.NewResponse(nil, err.Error()).OperationERR())
+		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).OperationERR())
 
 		return
 	}
 
 	log.Printf("delete user success")
 	c.JSON(http.StatusOK, utils.NewResponse(nil, "delete user success").Success())
+}
+
+func (uc *UserController) checkUser(account string, password string) error {
+	if account == "" {
+		return errors.New("user account required")
+	}
+	if password == "" {
+		return errors.New("user password required")
+	}
+	if len(password) < 8 || len(password) > 32 {
+		return errors.New("invalid password")
+	}
+	//校验密码合法性
+	expr := `^(?![0-9a-zA-Z]+$)(?![a-zA-Z!@#$%^&*]+$)(?![0-9!@#$%^&*]+$)[0-9A-Za-z!@#$%^&*]{8,16}$`
+	reg, _ := regexp2.Compile(expr, 0)
+	m, _ := reg.MatchString(password)
+	if !m {
+		return errors.New("invalid password, At least one special character, lowercase and uppercase, is required")
+	}
+	return nil
+}
+
+func (uc *UserController) checkQueryOrUpdateUser(queryUser modeluser.User) error {
+	if queryUser.ID != "" && len(queryUser.ID) > 64 {
+		return errors.New("invalid id")
+	}
+	if queryUser.UserAccount != "" && len(queryUser.UserAccount) > 256 {
+		return errors.New("invalid user account")
+	}
+	if queryUser.UserName != "" && len(queryUser.UserName) > 256 {
+		return errors.New("invalid user name")
+	}
+	if queryUser.UserRole != "" {
+		if queryUser.UserRole != constant.Common && queryUser.UserRole != constant.Admin {
+			return errors.New("invalid user role")
+		}
+	}
+	if queryUser.AvatarUrl != "" && len(queryUser.AvatarUrl) > 256 {
+		return errors.New("invalid avatar url")
+	}
+	if queryUser.IsDelete != 0 {
+		if queryUser.IsDelete != constant.ALIVE && queryUser.IsDelete != constant.DELETE {
+			return errors.New("invalid is delete")
+		}
+	}
+	if queryUser.UserPassword != "" {
+		if len(queryUser.UserPassword) < 8 || len(queryUser.UserPassword) > 32 {
+			return errors.New("invalid password")
+		}
+		//校验密码合法性
+		expr := `^(?![0-9a-zA-Z]+$)(?![a-zA-Z!@#$%^&*]+$)(?![0-9!@#$%^&*]+$)[0-9A-Za-z!@#$%^&*]{8,16}$`
+		reg, _ := regexp2.Compile(expr, 0)
+		m, _ := reg.MatchString(queryUser.UserPassword)
+		if !m {
+			return errors.New("invalid password, At least one special character, lowercase and uppercase, is required")
+		}
+	}
+	return nil
 }

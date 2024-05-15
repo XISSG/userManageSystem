@@ -3,7 +3,9 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
-	"github.com/xissg/userManageSystem/model/entity"
+	"github.com/xissg/userManageSystem/entity/modeluser"
+	"github.com/xissg/userManageSystem/service/mysql"
+	redis2 "github.com/xissg/userManageSystem/service/redis"
 	"log"
 	"time"
 )
@@ -19,36 +21,16 @@ import (
 // redis读取失败，mysql读取失败:
 // 返回失败
 type UserService struct {
-	MysqlService DBService
-	RedisService CacheService
+	MysqlService mysql.UserService
+	RedisService redis2.UserService
 }
 
-func NewUserService(m DBService, r CacheService) *UserService {
+func NewUserService(m mysql.UserService, r redis2.UserService) *UserService {
 
 	return &UserService{
 		MysqlService: m,
 		RedisService: r,
 	}
-}
-
-func (userService *UserService) GetUser(username string, ctx *gin.Context) (interface{}, error) {
-	result, err := userService.RedisService.GetUserByName(username, ctx)
-	if err == redis.Nil {
-		result, err = userService.MysqlService.GetUserByName(username)
-		if err != nil {
-			return nil, err
-		}
-
-		_ = userService.RedisService.AddUser(result, ctx)
-		return result, nil
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-
 }
 
 // AddUser 写服务，封装了对MySQL和redis的写服务
@@ -58,88 +40,117 @@ func (userService *UserService) GetUser(username string, ctx *gin.Context) (inte
 // 直接返回失败
 // MySQL写入成功，redis写入失败
 // 返回成功
-func (userService *UserService) AddUser(user entity.User, ctx *gin.Context) error {
-	err := userService.MysqlService.AddUser(user)
-	if err != nil {
+func (userService *UserService) AddUser(user modeluser.User, ctx *gin.Context) error {
+	var redisErr error
+	ch := make(chan error)
 
-		return err
-	}
+	go func() {
+		mysqlErr := userService.MysqlService.AddUser(user)
+		if mysqlErr != nil {
+			log.Println("Mysql add failed")
+		}
+		ch <- mysqlErr
+		close(ch)
+	}()
 
 	retryCount := 3
 	retryTime := time.Second * 2
 	for i := 0; i < retryCount; i++ {
-		err = userService.RedisService.AddUser(user, ctx)
-		if err == nil {
+		redisErr = userService.RedisService.AddUser(user, ctx)
+		if redisErr == nil {
 			break
 		}
 
 		time.Sleep(retryTime)
 	}
 
-	if err != nil {
+	if redisErr != nil {
 		log.Println("Redis add  failed")
-		return err
+	}
+
+	mysqlErr := <-ch
+	if mysqlErr != nil {
+		return mysqlErr
 	}
 
 	return nil
 }
 
-// UpdateUserAll 更新服务，封装了对MySQL和redis的更新服务
+func (userService *UserService) GetUser(userAccount string, ctx *gin.Context) (modeluser.User, error) {
+	res := make(chan modeluser.User)
+	errChan := make(chan error)
+
+	// 尝试从 Redis 中获取用户信息
+	result, redisErr := userService.RedisService.GetUser(userAccount, ctx)
+
+	// 在协程中尝试从 MySQL 中获取用户信息
+	go func() {
+		mysqlResult, mysqlErr := userService.MysqlService.GetUser(userAccount)
+		res <- mysqlResult
+		errChan <- mysqlErr
+	}()
+
+	mysqlRes := <-res
+	mysqlErr := <-errChan
+
+	// 检查 MySQL 中是否存在错误
+	if mysqlErr != nil {
+		return modeluser.User{}, mysqlErr
+	}
+
+	// 如果 Redis 返回了空结果，则将 MySQL 中获取到的用户信息写入 Redis 中
+	if redisErr == redis.Nil {
+		_ = userService.RedisService.AddUser(mysqlRes, ctx)
+		return mysqlRes, nil
+	}
+
+	// 如果 Redis 存在其他错误，则返回错误信息
+	if redisErr != nil {
+		return modeluser.User{}, redisErr
+	}
+
+	return result, nil
+}
+
+// UpdateUserInfo 更新服务，封装了对MySQL和redis的更新服务
 // 更新逻辑写入MySQL的同时，写入redis缓存中
 // 写入情况：
 // MySQL更新失败
 // 直接返回失败
 // MySQL写入成功，redis写入失败
 // 返回成功
-func (userService *UserService) UpdateUserAll(user entity.UpdateUser, ctx *gin.Context) error {
-	err := userService.MysqlService.UpdateUserAll(user)
-	if err != nil {
 
-		return err
-	}
+func (userService *UserService) UpdateUserInfo(user modeluser.User, ctx *gin.Context) error {
+	var redisErr error
+	ch := make(chan error)
 
+	go func() {
+		mysqlErr := userService.MysqlService.UpdateUser(user)
+		ch <- mysqlErr
+		close(ch)
+	}()
+
+	//错误重试
 	retryCount := 3
 	retryTime := time.Second * 2
 	for i := 0; i < retryCount; i++ {
-		err = userService.RedisService.UpdateUserAll(user, ctx)
-		if err == nil {
+		redisErr = userService.RedisService.UpdateUser(user, ctx)
+		if redisErr == nil {
 			break
 		}
 
 		time.Sleep(retryTime)
 	}
 
-	if err != nil {
+	mysqlErr := <-ch
+	if mysqlErr != nil {
+		log.Println("Mysql update error: ", mysqlErr)
+		return mysqlErr
+	}
+
+	if redisErr != nil {
 		log.Println("Redis cache update failed")
-
-		return err
-	}
-
-	return nil
-}
-
-func (userService *UserService) UpdateUserOne(column string, user entity.UpdateUser, ctx *gin.Context) error {
-	err := userService.MysqlService.UpdateUserOne(column, user)
-	if err != nil {
-
-		return err
-	}
-
-	retryCount := 3
-	retryTime := time.Second * 2
-	for i := 0; i < retryCount; i++ {
-		err = userService.RedisService.UpdateUserOne(column, user, ctx)
-		if err == nil {
-			break
-		}
-
-		time.Sleep(retryTime)
-	}
-
-	if err != nil {
-		log.Println("Redis cache update failed")
-
-		return err
+		return redisErr
 	}
 
 	return nil
@@ -152,27 +163,37 @@ func (userService *UserService) UpdateUserOne(column string, user entity.UpdateU
 // 直接返回失败
 // MySQL删除成功，redis删除成功
 // 返回成功
-func (userService *UserService) DeleteUser(username string, ctx *gin.Context) error {
-	err := userService.MysqlService.DeleteUserByName(username)
-	if err != nil {
-		return err
-	}
+func (userService *UserService) DeleteUser(accountName string, ctx *gin.Context) error {
+	var mysqlErr error
+	var redisErr error
+
+	ch := make(chan error)
+
+	go func() {
+		mysqlErr := userService.MysqlService.DeleteUser(accountName)
+		ch <- mysqlErr
+		close(ch)
+	}()
 
 	retryCount := 3
 	retryTime := time.Second * 2
 	for i := 0; i < retryCount; i++ {
-		err = userService.RedisService.DeleteUserByName(username, ctx)
-		if err == nil {
+		redisErr = userService.RedisService.DeleteUser(accountName, ctx)
+		if redisErr == nil {
 			break
 		}
 
 		time.Sleep(retryTime)
 	}
 
-	if err != nil {
-		log.Println("Redis cache update failed")
+	mysqlErr = <-ch
+	if mysqlErr != nil {
+		return mysqlErr
+	}
 
-		return err
+	if redisErr != nil {
+		log.Println("Redis cache update failed")
+		return redisErr
 	}
 
 	return nil

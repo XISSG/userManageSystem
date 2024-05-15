@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"github.com/google/uuid"
 	rands "math/rand"
-	"strconv"
 	"time"
 )
 
@@ -26,7 +25,7 @@ func RandomExpireTime() time.Duration {
 	return expire
 }
 
-func NewUuid() int64 {
-	uid, _ := strconv.Atoi(uuid.New().String())
-	return int64(uid)
+func NewUuid() string {
+	uid := uuid.NewString()
+	return uid
 }
