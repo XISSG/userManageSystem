@@ -2,7 +2,7 @@ package modelquestion
 
 import (
 	"encoding/json"
-	"github.com/xissg/userManageSystem/constant"
+	"github.com/xissg/userManageSystem/common/constant"
 	"github.com/xissg/userManageSystem/utils"
 	"time"
 )

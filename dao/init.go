@@ -3,7 +3,6 @@ package dao
 import (
 	"fmt"
 	redisstore "github.com/gin-contrib/sessions/redis"
-	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 	"github.com/xissg/userManageSystem/conf"
 	"gorm.io/driver/mysql"
@@ -56,14 +55,14 @@ func InitRedisStore() redisstore.Store {
 	return store
 }
 
-func InitRedis() *redis.Client {
-	config := readConfig("redis")
-	address := fmt.Sprintf("%s:%d", config.Host, config.Port)
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     address,
-		Password: config.Password, // 没有密码，默认值
-		DB:       0,               // 默认DB 0
-	})
-
-	return rdb
-}
+//func InitRedis() *redis.Client {
+//	config := readConfig("redis")
+//	address := fmt.Sprintf("%s:%d", config.Host, config.Port)
+//	rdb := redis.NewClient(&redis.Options{
+//		Addr:     address,
+//		Password: config.Password, // 没有密码，默认值
+//		DB:       0,               // 默认DB 0
+//	})
+//
+//	return rdb
+//}

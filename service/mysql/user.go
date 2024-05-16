@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"github.com/xissg/userManageSystem/constant"
+	"github.com/xissg/userManageSystem/common/constant"
 	"github.com/xissg/userManageSystem/entity/modeluser"
 	"gorm.io/gorm"
 )

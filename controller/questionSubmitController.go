@@ -3,14 +3,15 @@ package controller
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/xissg/userManageSystem/constant"
+	"github.com/xissg/userManageSystem/common/api_response"
+	"github.com/xissg/userManageSystem/common/constant"
 	"github.com/xissg/userManageSystem/core/judge"
 	"github.com/xissg/userManageSystem/entity/modelquestion"
 	"github.com/xissg/userManageSystem/service/mysql"
 	"github.com/xissg/userManageSystem/service/redis"
-	"github.com/xissg/userManageSystem/utils"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 )
 
@@ -44,7 +45,7 @@ func (qsc *QuestionSubmitController) Submit(c *gin.Context) {
 	session, err := qsc.sessionService.GetSession(c)
 	if session.UserRole != constant.Common && session.UserRole != constant.Admin {
 		log.Printf("you are not login")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not login").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not login").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -53,7 +54,7 @@ func (qsc *QuestionSubmitController) Submit(c *gin.Context) {
 	//取出数据
 	if err = c.ShouldBindJSON(&qsAdd); err != nil {
 		log.Printf("Failed to unmarshal")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "unmarshal error ").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -62,7 +63,7 @@ func (qsc *QuestionSubmitController) Submit(c *gin.Context) {
 	language := checkLanguage(qsAdd.Language)
 	if language == "" || qsAdd.QuestionId == "" || qsAdd.Code == "" {
 		log.Printf("invalid language ")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "invalid language ").ParamsERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "invalid language ").Response(api_response.PARAMSERR))
 
 		return
 	}
@@ -76,13 +77,13 @@ func (qsc *QuestionSubmitController) Submit(c *gin.Context) {
 	err = qsc.qsService.AddSubmitQuestion(questionSubmit)
 	if err != nil {
 		log.Printf("Failed to submit")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "submit error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "submit error ").Response(api_response.OPERATIONERR))
 
 		return
 	}
 
 	log.Printf("submit success")
-	c.JSON(http.StatusOK, utils.NewResponse(questionSubmit.ID, "submit success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(questionSubmit.ID, "submit success").Response(api_response.SUCCESS))
 
 	//协程池优化性能
 	var wg sync.WaitGroup
@@ -111,7 +112,7 @@ func (qsc *QuestionSubmitController) GetQuestionSubmit(c *gin.Context) {
 	session, err := qsc.sessionService.GetSession(c)
 	if session.UserRole != constant.Common && session.UserRole != constant.Admin {
 		log.Printf("you are not login")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not login").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not login").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -119,7 +120,7 @@ func (qsc *QuestionSubmitController) GetQuestionSubmit(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		log.Printf("invalid id")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "invalid id ").ParamsERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "invalid id ").Response(api_response.PARAMSERR))
 
 		return
 	}
@@ -127,20 +128,20 @@ func (qsc *QuestionSubmitController) GetQuestionSubmit(c *gin.Context) {
 	question, err := qsc.questionService.GetQuestion(submit.QuestionId)
 	if err != nil {
 		log.Printf("Failed to get submit result")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "get submit result error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "get submit result error ").Response(api_response.OPERATIONERR))
 		return
 	}
 
 	if session.UserRole != constant.Admin && question.UserId != submit.UserId {
 		result := modelquestion.QSToReturnQS(submit, "")
 		log.Printf("get submit result success")
-		c.JSON(http.StatusOK, utils.NewResponse(result, "get submit result success").Success())
+		c.JSON(http.StatusOK, api_response.NewResponse(result, "get submit result success").Response(api_response.SUCCESS))
 		return
 	}
 
 	result := modelquestion.QSToReturnQS(submit, question.Answer)
 	log.Printf("get submit result success")
-	c.JSON(http.StatusOK, utils.NewResponse(result, "get submit result success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(result, "get submit result success").Response(api_response.SUCCESS))
 	return
 }
 
@@ -160,13 +161,13 @@ func (qsc *QuestionSubmitController) GetQuestionSubmitList(c *gin.Context) {
 	session, err := qsc.sessionService.GetSession(c)
 	if err != nil {
 		log.Printf("you are not login")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not login").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not login").Response(api_response.AUTHERR))
 
 		return
 	}
 	if session.UserRole != constant.Admin {
 		log.Printf("you are not admin")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not admin").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not admin").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -175,7 +176,7 @@ func (qsc *QuestionSubmitController) GetQuestionSubmitList(c *gin.Context) {
 	//取出数据
 	if err = c.ShouldBindJSON(&qsQuery); err != nil {
 		log.Printf("Failed to unmarshal")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "unmarshal error ").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -184,7 +185,7 @@ func (qsc *QuestionSubmitController) GetQuestionSubmitList(c *gin.Context) {
 	err = qsc.checkQueries(qsQuery)
 	if err != nil {
 		log.Printf("invalid queries %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).ParamsERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, err.Error()).Response(api_response.PARAMSERR))
 
 		return
 	}
@@ -192,19 +193,20 @@ func (qsc *QuestionSubmitController) GetQuestionSubmitList(c *gin.Context) {
 	res, err := qsc.qsService.GetSubmitQuestionList(qs)
 	if err != nil {
 		log.Printf("Failed to get submit result")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "get submit result error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "get submit result error ").Response(api_response.OPERATIONERR))
 		return
 	}
 
 	qsReturns := modelquestion.QSsToReturnQSs(res, "")
 	log.Printf("get submit result success")
-	c.JSON(http.StatusOK, utils.NewResponse(qsReturns, "get submit result success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(qsReturns, "get submit result success").Response(api_response.SUCCESS))
 }
 
 func checkLanguage(lang string) string {
-	switch lang {
+	lan := strings.ToLower(lang)
+	switch lan {
 	case modelquestion.C, modelquestion.Cpp, modelquestion.Java, modelquestion.Go, modelquestion.Python, modelquestion.Js, modelquestion.Ts, modelquestion.Php:
-		return lang
+		return lan
 	default:
 		return ""
 	}

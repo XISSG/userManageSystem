@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"github.com/xissg/userManageSystem/constant"
+	"github.com/xissg/userManageSystem/common/constant"
 	"github.com/xissg/userManageSystem/entity/modelquestion"
 	"gorm.io/gorm"
 )
@@ -123,6 +123,7 @@ func (qds *QuestionService) GetQuestion(questionId string) (modelquestion.Questi
  * @author xissg
  */
 func (qds *QuestionService) GetQuestionList(questionList modelquestion.CommonQueryQuestion) ([]modelquestion.Question, error) {
+	//TODO:使用分页查询
 	err := qds.db.AutoMigrate(&modelquestion.Question{})
 	if err != nil {
 		return nil, err

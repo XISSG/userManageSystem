@@ -4,7 +4,6 @@ import (
 	"encoding/gob"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron/v3"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/xissg/userManageSystem/controller"
@@ -12,7 +11,6 @@ import (
 	_ "github.com/xissg/userManageSystem/docs"
 	"github.com/xissg/userManageSystem/entity/modeluser"
 	"github.com/xissg/userManageSystem/middleware"
-	"github.com/xissg/userManageSystem/service"
 	mysql2 "github.com/xissg/userManageSystem/service/mysql"
 	redis2 "github.com/xissg/userManageSystem/service/redis"
 )
@@ -31,7 +29,7 @@ func NewServer() {
 
 	// 初始化数据库连接
 	db := dao.InitDB()
-	rdb := dao.InitRedis()
+	//rdb := dao.InitRedis()
 
 	//初始化session
 	store := dao.InitRedisStore()
@@ -40,9 +38,7 @@ func NewServer() {
 	//注入依赖
 	sessionService := redis2.NewSessionService(store)
 	mysqlService := mysql2.NewUserService(db)
-	redisService := redis2.NewRedisService(rdb)
-	userService := service.NewUserService(*mysqlService, *redisService)
-	userController := controller.NewUserController(*userService, *sessionService)
+	userController := controller.NewUserController(*mysqlService, *sessionService)
 
 	//题目相关依赖
 	questionMysqlService := mysql2.NewQuestionMysqlService(db)
@@ -52,12 +48,6 @@ func NewServer() {
 	qsMysqlService := mysql2.NewQuestionSubmitMysqlService(db)
 	qsService := mysql2.NewQuestionMysqlService(db)
 	qsController := controller.NewQuestionSubmitController(qsMysqlService, qsService, sessionService)
-
-	//开启定时任务
-	cronJob := service.NewCronJob(mysqlService, redisService)
-	c := cron.New()
-	c.AddFunc("@daily", cronJob.Start)
-	c.Start()
 
 	//映射路由
 	v1 := r.Group("api")

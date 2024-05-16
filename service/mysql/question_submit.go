@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"github.com/xissg/userManageSystem/constant"
+	"github.com/xissg/userManageSystem/common/constant"
 	"github.com/xissg/userManageSystem/entity/modelquestion"
 	"gorm.io/gorm"
 )
@@ -72,6 +72,7 @@ func (qsds *QuestionSubmitService) GetSubmitQuestion(submitId string) (modelques
  * @author xissg
  */
 func (qsds *QuestionSubmitService) GetSubmitQuestionList(qsQuery modelquestion.CommonQueryQS) ([]modelquestion.QuestionSubmit, error) {
+	//TODO:使用分页查询
 	err := qsds.db.AutoMigrate(&modelquestion.QuestionSubmit{})
 	if err != nil {
 		return nil, err

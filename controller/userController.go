@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/dlclark/regexp2"
 	"github.com/gin-gonic/gin"
-	"github.com/xissg/userManageSystem/constant"
+	"github.com/xissg/userManageSystem/common/api_response"
+	"github.com/xissg/userManageSystem/common/constant"
 	"github.com/xissg/userManageSystem/entity/modeluser"
-	"github.com/xissg/userManageSystem/service"
+	"github.com/xissg/userManageSystem/service/mysql"
 	"github.com/xissg/userManageSystem/service/redis"
-	"github.com/xissg/userManageSystem/utils"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
@@ -17,10 +17,10 @@ import (
 
 type UserController struct {
 	sessionService *redis.SessionService
-	userService    *service.UserService
+	userService    *mysql.UserService
 }
 
-func NewUserController(userService service.UserService, sessionService redis.SessionService) *UserController {
+func NewUserController(userService mysql.UserService, sessionService redis.SessionService) *UserController {
 
 	return &UserController{
 		sessionService: &sessionService,
@@ -45,7 +45,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&receiveUser); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "unmarshal error ").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -53,16 +53,16 @@ func (uc *UserController) Register(c *gin.Context) {
 	//校验字段合法性
 	err := uc.checkUser(receiveUser.UserAccount, receiveUser.UserPassword)
 	if err != nil {
-		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, err.Error()).Response(api_response.AUTHERR))
 		log.Printf("validate %v", err)
 
 		return
 	}
 
 	//校验账户是否存在
-	_, err = uc.userService.GetUser(receiveUser.UserAccount, c)
+	_, err = uc.userService.GetUser(receiveUser.UserAccount)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "user account repeated").LoginERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "user account repeated").Response(api_response.AUTHERR))
 		log.Println("user account repeated")
 
 		return
@@ -73,7 +73,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	user = modeluser.AddUserToUser(receiveUser)
 
 	//插入数据库
-	err = uc.userService.AddUser(user, c)
+	err = uc.userService.AddUser(user)
 	if err != nil {
 		log.Printf("create user failed")
 
@@ -81,7 +81,7 @@ func (uc *UserController) Register(c *gin.Context) {
 	}
 
 	log.Printf("register success")
-	c.JSON(http.StatusOK, utils.NewResponse(nil, "register success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(nil, "register success").Response(api_response.SUCCESS))
 
 }
 
@@ -102,7 +102,7 @@ func (uc *UserController) Login(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&loginUser); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "unmarshal error ").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -111,16 +111,16 @@ func (uc *UserController) Login(c *gin.Context) {
 	err := uc.checkUser(loginUser.UserAccount, loginUser.UserPassword)
 	if err != nil {
 		log.Printf("%v invalid user account or password", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, err.Error()).Response(api_response.AUTHERR))
 		return
 	}
 
 	user := modeluser.LoginUserToUser(loginUser)
 	//查询用户账户和密码是否匹配
-	ret, err := uc.userService.GetUser(user.UserAccount, c)
+	ret, err := uc.userService.GetUser(user.UserAccount)
 	if ret.UserAccount == "" {
 		log.Println("The user has not registered yet")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "The user has not registered yet").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "The user has not registered yet").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -128,14 +128,14 @@ func (uc *UserController) Login(c *gin.Context) {
 	//禁用的账号
 	if ret.UserRole == constant.Ban {
 		log.Println("The user has been banned")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "The user has been banned").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "The user has been banned").Response(api_response.AUTHERR))
 
 		return
 	}
 
 	if ret.UserPassword != user.UserPassword {
 		log.Println("username or password is wrong")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "username or password is wrong").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "username or password is wrong").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -152,7 +152,7 @@ func (uc *UserController) Login(c *gin.Context) {
 	//插入成功
 	resultUser := modeluser.UserToReturnUser(ret)
 	log.Printf("login success")
-	c.JSON(http.StatusOK, utils.NewResponse(resultUser, "login success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(resultUser, "login success").Response(api_response.SUCCESS))
 }
 
 // Logout 登出账户
@@ -169,7 +169,7 @@ func (uc *UserController) Logout(c *gin.Context) {
 	validity, _ := uc.sessionService.GetSession(c)
 	if validity.UserRole == constant.Anonymous {
 		log.Printf("you must login first")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "you must login first").LoginERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you must login first").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -183,7 +183,7 @@ func (uc *UserController) Logout(c *gin.Context) {
 	}
 
 	log.Printf("logout success")
-	c.JSON(http.StatusOK, utils.NewResponse(nil, "logout success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(nil, "logout success").Response(api_response.SUCCESS))
 }
 
 // QueryUserList 查询用户列表
@@ -203,7 +203,7 @@ func (uc *UserController) QueryUserList(c *gin.Context) {
 
 	if validity.UserRole == constant.Anonymous || validity.UserRole == constant.Ban {
 		log.Printf("you must login first")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "you must login first").LoginERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you must login first").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -212,29 +212,29 @@ func (uc *UserController) QueryUserList(c *gin.Context) {
 	err := uc.checkQueryOrUpdateUser(user)
 	if err != nil {
 		log.Printf("validate %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, err.Error()).Response(api_response.AUTHERR))
 		return
 	}
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&queryRequest); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "unmarshal error ").Response(api_response.OPERATIONERR))
 
 		return
 	}
 
 	commonQuery := modeluser.UserQueryToCommonQuery(queryRequest)
-	res, err := uc.userService.MysqlService.GetUserList(commonQuery)
+	res, err := uc.userService.GetUserList(commonQuery)
 	if err != nil {
 		log.Println(fmt.Sprintf("query user %v", err))
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "query user error").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "query user error").Response(api_response.OPERATIONERR))
 
 		return
 	}
 
 	ret := modeluser.UsersToReturnUsers(res)
 	log.Println("query users success")
-	c.JSON(http.StatusOK, utils.NewResponse(ret, "query users success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(ret, "query users success").Response(api_response.SUCCESS))
 }
 
 // AdminQueryUserList 查询用户列表
@@ -252,7 +252,7 @@ func (uc *UserController) AdminQueryUserList(c *gin.Context) {
 	//判断用户权限
 	validity, _ := uc.sessionService.GetSession(c)
 	if validity.UserRole != constant.Admin {
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not admin").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not admin").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -261,7 +261,7 @@ func (uc *UserController) AdminQueryUserList(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&adminQuery); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "unmarshal error ").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -271,23 +271,23 @@ func (uc *UserController) AdminQueryUserList(c *gin.Context) {
 	err := uc.checkQueryOrUpdateUser(query)
 	if err != nil {
 		log.Printf("validate %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, err.Error()).Response(api_response.AUTHERR))
 
 		return
 	}
 
-	res, err := uc.userService.MysqlService.GetUserList(adminQuery)
+	res, err := uc.userService.GetUserList(adminQuery)
 
 	if err != nil {
 		log.Println(fmt.Sprintf("query user %v", err))
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "query user error").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "query user error").Response(api_response.OPERATIONERR))
 
 		return
 	}
 
 	result := modeluser.UsersToAdminReturnUsers(res)
 	log.Println("query users success")
-	c.JSON(http.StatusOK, utils.NewResponse(result, "query users success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(result, "query users success").Response(api_response.SUCCESS))
 }
 
 // UpdateUser 更新用户信息
@@ -307,7 +307,7 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 
 	if validity.UserRole != constant.Common && validity.UserRole != constant.Admin {
 		log.Printf("you are not login")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not login").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not login").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -316,7 +316,7 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&updateUser); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "unmarshal error ").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -327,30 +327,30 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 	err := uc.checkQueryOrUpdateUser(update)
 	if err != nil {
 		log.Printf("validate %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, err.Error()).Response(api_response.AUTHERR))
 
 		return
 	}
 
 	//更新用户信息
-	oldInfo, err := uc.userService.GetUser(validity.UserAccount, c)
+	oldInfo, err := uc.userService.GetUser(validity.UserAccount)
 	if err != nil {
 		log.Println(fmt.Sprintf("query user %v", err))
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "query user error").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "query user error").Response(api_response.OPERATIONERR))
 
 		return
 	}
 	user := modeluser.UpdateUserToUser(oldInfo, updateUser)
-	err = uc.userService.UpdateUserInfo(user, c)
+	err = uc.userService.UpdateUser(user)
 	if err != nil {
 		log.Println(fmt.Sprintf("update user %v", err))
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "update user error").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "update user error").Response(api_response.OPERATIONERR))
 
 		return
 	}
 
 	log.Printf("update modeluser success")
-	c.JSON(http.StatusOK, utils.NewResponse(nil, "update user success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(nil, "update user success").Response(api_response.SUCCESS))
 }
 
 // EditUser 更新用户信息
@@ -369,7 +369,7 @@ func (uc *UserController) EditUser(c *gin.Context) {
 	validity, _ := uc.sessionService.GetSession(c)
 	if validity.UserRole != constant.Admin {
 		log.Printf("you are not admin")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not admin").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not admin").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -378,7 +378,7 @@ func (uc *UserController) EditUser(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&editUser); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "unmarshal error ").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "unmarshal error ").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -389,31 +389,31 @@ func (uc *UserController) EditUser(c *gin.Context) {
 	err := uc.checkQueryOrUpdateUser(edit)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).LoginERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, err.Error()).Response(api_response.AUTHERR))
 
 		return
 	}
 
 	//获取原始信息
-	oldInfo, err := uc.userService.GetUser(editUser.UserAccount, c)
+	oldInfo, err := uc.userService.GetUser(editUser.UserAccount)
 	if err != nil {
 		log.Println(fmt.Sprintf("no such user %v", err))
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "no such user").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "no such user").Response(api_response.OPERATIONERR))
 		return
 	}
 
 	//更新用户信息
 	user := modeluser.EditUserToUser(oldInfo, editUser)
-	err = uc.userService.UpdateUserInfo(user, c)
+	err = uc.userService.UpdateUser(user)
 	if err != nil {
 		log.Println(fmt.Sprintf("update user %v", err))
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "update user error").OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "update user error").Response(api_response.OPERATIONERR))
 
 		return
 	}
 
 	log.Printf("update user success")
-	c.JSON(http.StatusOK, utils.NewResponse(nil, "update user success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(nil, "update user success").Response(api_response.SUCCESS))
 }
 
 // DeleteUser 删除用户
@@ -432,7 +432,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 	//判断用户权限
 	validity, _ := uc.sessionService.GetSession(c)
 	if validity.UserRole != constant.Admin {
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "you are not validity user").AuthERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not validity user").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -441,22 +441,22 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 	userAccount := c.Param("useraccount")
 	if userAccount == "" {
 		log.Println("not a valid query user account")
-		c.JSON(http.StatusOK, utils.NewResponse(nil, "not a valid query account").ParamsERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, "not a valid query account").Response(api_response.PARAMSERR))
 
 		return
 	}
 
 	//逻辑删除用户
-	err := uc.userService.DeleteUser(userAccount, c)
+	err := uc.userService.DeleteUser(userAccount)
 	if err != nil {
 		log.Printf("delete user  %v", err)
-		c.JSON(http.StatusOK, utils.NewResponse(nil, err.Error()).OperationERR())
+		c.JSON(http.StatusOK, api_response.NewResponse(nil, err.Error()).Response(api_response.OPERATIONERR))
 
 		return
 	}
 
 	log.Printf("delete user success")
-	c.JSON(http.StatusOK, utils.NewResponse(nil, "delete user success").Success())
+	c.JSON(http.StatusOK, api_response.NewResponse(nil, "delete user success").Response(api_response.SUCCESS))
 }
 
 func (uc *UserController) checkUser(account string, password string) error {
@@ -466,16 +466,10 @@ func (uc *UserController) checkUser(account string, password string) error {
 	if password == "" {
 		return errors.New("user password required")
 	}
-	if len(password) < 8 || len(password) > 32 {
-		return errors.New("invalid password")
-	}
-	//校验密码合法性
-	expr := `^(?![0-9a-zA-Z]+$)(?![a-zA-Z!@#$%^&*]+$)(?![0-9!@#$%^&*]+$)[0-9A-Za-z!@#$%^&*]{8,16}$`
-	reg, _ := regexp2.Compile(expr, 0)
-	m, _ := reg.MatchString(password)
-	if !m {
-		return errors.New("invalid password, At least one special character, lowercase and uppercase, is required")
-	}
+	err := uc.checkPassword(password)
+	if err!= nil {
+        return err
+    }
 	return nil
 }
 
@@ -503,16 +497,24 @@ func (uc *UserController) checkQueryOrUpdateUser(queryUser modeluser.User) error
 		}
 	}
 	if queryUser.UserPassword != "" {
-		if len(queryUser.UserPassword) < 8 || len(queryUser.UserPassword) > 32 {
-			return errors.New("invalid password")
+		err := uc.checkPassword(queryUser.UserPassword)
+		if err != nil {
+			return err
 		}
-		//校验密码合法性
-		expr := `^(?![0-9a-zA-Z]+$)(?![a-zA-Z!@#$%^&*]+$)(?![0-9!@#$%^&*]+$)[0-9A-Za-z!@#$%^&*]{8,16}$`
-		reg, _ := regexp2.Compile(expr, 0)
-		m, _ := reg.MatchString(queryUser.UserPassword)
-		if !m {
-			return errors.New("invalid password, At least one special character, lowercase and uppercase, is required")
-		}
+	}
+	return nil
+}
+
+func (uc *UserController) checkPassword(password string) error {
+	if len(password) < 8 || len(password) > 32 {
+		return errors.New("invalid password")
+	}
+	//校验密码合法性
+	expr := `^(?![0-9a-zA-Z]+$)(?![a-zA-Z!@#$%^&*]+$)(?![0-9!@#$%^&*]+$)[0-9A-Za-z!@#$%^&*]{8,16}$`
+	reg, _ := regexp2.Compile(expr, 0)
+	m, _ := reg.MatchString(password)
+	if !m {
+		return errors.New("invalid password, At least one special character, lowercase and uppercase, is required")
 	}
 	return nil
 }

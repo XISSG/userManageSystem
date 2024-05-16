@@ -2,6 +2,7 @@ package judge
 
 import (
 	"github.com/xissg/userManageSystem/core/sanbox"
+	"github.com/xissg/userManageSystem/common/constant"
 	"github.com/xissg/userManageSystem/entity/modelquestion"
 	mysql2 "github.com/xissg/userManageSystem/service/mysql"
 	"log"
@@ -25,7 +26,7 @@ func (s *JudgeService) Judge(submitId string) {
 	if err != nil {
 		return
 	}
-	if submit.Status != modelquestion.WAITING {
+	if submit.Status != constant.WAITING {
 		return
 	}
 	res, err := s.questionService.GetQuestion(submit.QuestionId)
@@ -34,7 +35,7 @@ func (s *JudgeService) Judge(submitId string) {
 	}
 
 	var update modelquestion.UpdateQuestionSubmitRequest
-	update.Status = modelquestion.JUDGING
+	update.Status = constant.JUDGING
 	judgeContext := sanbox.ToJudgeContext(&submit, &res)
 
 	//开始沙箱判题
@@ -44,23 +45,26 @@ func (s *JudgeService) Judge(submitId string) {
 	//判题结果处理
 	if err != nil {
 		update.JudgeInfo[0].Message = err.Error()
-		update.Status = modelquestion.FAIL
+		update.Status = constant.FAIL
 	}
 
 	//程序执行内存溢出，超时等
 	question := modelquestion.QuestionToReturnQuestion(res)
 	for i := range result {
 		if result[i].CostTime > question.JudgeConfig.TimeLimit {
-			update.Status = modelquestion.FAIL
-			update.JudgeInfo[i].Message = modelquestion.TimeLimitExceeded
+			update.Status = constant.FAIL
+			update.JudgeInfo[i].Message = constant.TimeLimitExceeded
 
 		} else if result[i].Memory > question.JudgeConfig.MemoryLimit {
-			update.Status = modelquestion.FAIL
-			update.JudgeInfo[i].Message = modelquestion.MemoryLimitExceeded
+			update.Status = constant.FAIL
+			update.JudgeInfo[i].Message = constant.MemoryLimitExceeded
 
+		}else if result[i].Logs != res.Answer{
+			update.Status = constant.FAIL
+			update.JudgeInfo[i].Message = constant.WrongAnswer
 		} else {
-			update.Status = modelquestion.SUCCESS
-			update.JudgeInfo[i].Message = modelquestion.Accepted
+			update.Status = constant.SUCCESS
+			update.JudgeInfo[i].Message = constant.Accepted
 		}
 		update.JudgeInfo[i].Time = result[i].CostTime
 		update.JudgeInfo[i].Memory = result[i].Memory

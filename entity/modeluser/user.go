@@ -1,7 +1,7 @@
 package modeluser
 
 import (
-	"github.com/xissg/userManageSystem/constant"
+	"github.com/xissg/userManageSystem/common/constant"
 	"github.com/xissg/userManageSystem/utils"
 	"time"
 )
