@@ -1,9 +1,9 @@
 package judge
 
 import (
-	"github.com/xissg/userManageSystem/core/sanbox"
 	"github.com/xissg/userManageSystem/common/constant"
-	"github.com/xissg/userManageSystem/entity/modelquestion"
+	"github.com/xissg/userManageSystem/core/sanbox"
+	"github.com/xissg/userManageSystem/entity/model_question"
 	mysql2 "github.com/xissg/userManageSystem/service/mysql"
 	"log"
 )
@@ -20,7 +20,6 @@ func NewJudgeService(questionService *mysql2.QuestionService, questionSubmitServ
 	}
 }
 func (s *JudgeService) Judge(submitId string) {
-	//TODO:判断执行结果和答案是否一致
 	//判断提交判题状态
 	submit, err := s.questionSubmitService.GetSubmitQuestion(submitId)
 	if err != nil {
@@ -34,7 +33,10 @@ func (s *JudgeService) Judge(submitId string) {
 		return
 	}
 
-	var update modelquestion.UpdateQuestionSubmitRequest
+	var update model_question.UpdateQuestionSubmitRequest
+	var judgeInfo model_question.JudgeInfo
+
+	update.ID = submit.ID
 	update.Status = constant.JUDGING
 	judgeContext := sanbox.ToJudgeContext(&submit, &res)
 
@@ -42,36 +44,53 @@ func (s *JudgeService) Judge(submitId string) {
 	box := sanbox.NewSanBox()
 	result, err := box.Start(judgeContext)
 
-	//判题结果处理
+	//沙箱初始化异常处理
 	if err != nil {
-		update.JudgeInfo[0].Message = err.Error()
 		update.Status = constant.FAIL
+		judgeInfo.Message = constant.CompileError
+		update.JudgeInfo = append(update.JudgeInfo, judgeInfo)
+
+		return
 	}
 
 	//程序执行内存溢出，超时等
-	question := modelquestion.QuestionToReturnQuestion(res)
+	question := model_question.QuestionToReturnQuestion(res)
+
 	for i := range result {
-		if result[i].CostTime > question.JudgeConfig.TimeLimit {
+		switch result[i].ExitCode {
+		case -1:
 			update.Status = constant.FAIL
-			update.JudgeInfo[i].Message = constant.TimeLimitExceeded
+			judgeInfo.Message = constant.SystemError
+			update.JudgeInfo = append(update.JudgeInfo, judgeInfo)
+		case 0:
+			if result[i].CostTime > question.JudgeConfig.TimeLimit {
+				update.Status = constant.FAIL
+				judgeInfo.Message = constant.TimeLimitExceeded
 
-		} else if result[i].Memory > question.JudgeConfig.MemoryLimit {
-			update.Status = constant.FAIL
-			update.JudgeInfo[i].Message = constant.MemoryLimitExceeded
+			} else if result[i].Memory > question.JudgeConfig.MemoryLimit {
+				update.Status = constant.FAIL
+				judgeInfo.Message = constant.MemoryLimitExceeded
 
-		}else if result[i].Logs != res.Answer{
+			} else if result[i].ExecResult != question.Answer[i] {
+				update.Status = constant.FAIL
+				judgeInfo.Message = constant.WrongAnswer
+
+			} else {
+				update.Status = constant.SUCCESS
+				judgeInfo.Message = constant.Accepted
+
+			}
+		default:
 			update.Status = constant.FAIL
-			update.JudgeInfo[i].Message = constant.WrongAnswer
-		} else {
-			update.Status = constant.SUCCESS
-			update.JudgeInfo[i].Message = constant.Accepted
+			judgeInfo.Message = constant.RuntimeError
 		}
-		update.JudgeInfo[i].Time = result[i].CostTime
-		update.JudgeInfo[i].Memory = result[i].Memory
+		judgeInfo.Time = result[i].CostTime
+		judgeInfo.Memory = result[i].Memory
+		update.JudgeInfo = append(update.JudgeInfo, judgeInfo)
 	}
 
 	//判题成功更新数据
-	common := modelquestion.UpdateQSToCommonQS(update)
+	common := model_question.UpdateQSToCommonQS(update)
 	err = s.questionSubmitService.UpdateSubmitQuestion(common)
 
 	if err != nil {

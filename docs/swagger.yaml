@@ -1,36 +1,42 @@
 definitions:
-  modelquestion.AddQuestionRequest:
+  api_response.ApiResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
+  model_question.AddQuestionRequest:
     properties:
       answer:
         description: '"题目答案"'
-        type: string
+        items:
+          type: string
+        type: array
       content:
         description: '"内容"'
         type: string
       judge_case:
         description: '"判题用例json数组"'
         items:
-          $ref: '#/definitions/modelquestion.JudgeCase'
+          $ref: '#/definitions/model_question.JudgeCase'
         type: array
       judge_config:
         allOf:
-        - $ref: '#/definitions/modelquestion.JudgeConfig'
+        - $ref: '#/definitions/model_question.JudgeConfig'
         description: '"判题配置json对象"'
-      tags:
+      tag:
         description: '"标签列表json数组"'
-        items:
-          $ref: '#/definitions/modelquestion.Tags'
-        type: array
+        type: string
       title:
         description: '"标题"'
         type: string
       user_id:
         description: '"创建用户id"'
         type: string
-    required:
-    - user_id
     type: object
-  modelquestion.AddQuestionSubmitRequest:
+  model_question.AddQuestionSubmitRequest:
     properties:
       code:
         description: '"用户代码"'
@@ -41,30 +47,22 @@ definitions:
       question_id:
         description: '"题目id"'
         type: string
-    required:
-    - question_id
     type: object
-  modelquestion.JudgeCase:
+  model_question.JudgeCase:
     properties:
       input:
         type: string
       output:
         type: string
     type: object
-  modelquestion.JudgeConfig:
+  model_question.JudgeConfig:
     properties:
       memory_limit:
         type: integer
-      stack_limit:
-        type: integer
       time_limit:
         type: integer
-    required:
-    - memory_limit
-    - stack_limit
-    - time_limit
     type: object
-  modelquestion.JudgeInfo:
+  model_question.JudgeInfo:
     properties:
       memory:
         description: 单位为kb
@@ -76,23 +74,7 @@ definitions:
         description: 单位为ms
         type: integer
     type: object
-  modelquestion.QSReturn:
-    properties:
-      judge_info:
-        allOf:
-        - $ref: '#/definitions/modelquestion.JudgeInfo'
-        description: '"判题信息json对象(包含上面的枚举值)'
-      language:
-        description: '"编程语言"'
-        type: string
-      question_id:
-        description: 题目id
-        type: string
-      status:
-        description: '"判题状态（0-待判题,1-判题中,2-成功,3-失败)",'
-        type: integer
-    type: object
-  modelquestion.QueryQuestionRequest:
+  model_question.QueryQuestionRequest:
     properties:
       content:
         description: '"内容"'
@@ -102,13 +84,14 @@ definitions:
       judge_case:
         description: '"判题用例json数组"'
         items:
-          $ref: '#/definitions/modelquestion.JudgeCase'
+          $ref: '#/definitions/model_question.JudgeCase'
         type: array
-      tags:
+      language:
+        description: 语言
+        type: string
+      tag:
         description: '"标签列表json数组"'
-        items:
-          $ref: '#/definitions/modelquestion.Tags'
-        type: array
+        type: string
       title:
         description: '"标题"'
         type: string
@@ -116,8 +99,11 @@ definitions:
         description: '"创建用户id"'
         type: string
     type: object
-  modelquestion.QueryQuestionSubmitRequest:
+  model_question.QueryQuestionSubmitRequest:
     properties:
+      answer:
+        description: '"答案"'
+        type: string
       language:
         description: '"编程语言"'
         type: string
@@ -131,11 +117,37 @@ definitions:
         description: '"创建用户id"'
         type: string
     type: object
-  modelquestion.ReturnQuestion:
+  model_question.ReturnQS:
+    properties:
+      answer:
+        description: '"答案"'
+        items:
+          type: string
+        type: array
+      judge_info:
+        description: '"判题信息json对象(包含上面的枚举值)'
+        items:
+          $ref: '#/definitions/model_question.JudgeInfo'
+        type: array
+      language:
+        description: '"编程语言"'
+        type: string
+      question_id:
+        description: 题目id
+        type: string
+      status:
+        description: '"判题状态（0-待判题,1-判题中,2-成功,3-失败)",'
+        type: integer
+    type: object
+  model_question.ReturnQuestion:
     properties:
       accept_num:
         description: '"题目通过数"'
         type: integer
+      answer:
+        items:
+          type: string
+        type: array
       content:
         description: '"内容"'
         type: string
@@ -143,16 +155,14 @@ definitions:
         type: string
       judge_config:
         allOf:
-        - $ref: '#/definitions/modelquestion.JudgeConfig'
+        - $ref: '#/definitions/model_question.JudgeConfig'
         description: '"判题配置json对象"'
       submit_num:
         description: '"题目提交数'
         type: integer
-      tags:
+      tag:
         description: '"标签列表json数组"'
-        items:
-          $ref: '#/definitions/modelquestion.Tags'
-        type: array
+        type: string
       thum_num:
         description: '"点赞数"'
         type: integer
@@ -163,20 +173,13 @@ definitions:
         description: 用户id
         type: string
     type: object
-  modelquestion.Tags:
-    properties:
-      easy:
-        type: string
-      hard:
-        type: string
-      medium:
-        type: string
-    type: object
-  modelquestion.UpdateQuestionRequest:
+  model_question.UpdateQuestionRequest:
     properties:
       answer:
         description: '"题目答案"'
-        type: string
+        items:
+          type: string
+        type: array
       content:
         description: '"内容"'
         type: string
@@ -185,24 +188,20 @@ definitions:
       judge_case:
         description: '"判题用例json数组"'
         items:
-          $ref: '#/definitions/modelquestion.JudgeCase'
+          $ref: '#/definitions/model_question.JudgeCase'
         type: array
       judge_config:
         allOf:
-        - $ref: '#/definitions/modelquestion.JudgeConfig'
+        - $ref: '#/definitions/model_question.JudgeConfig'
         description: '"判题配置json对象"'
-      tags:
+      tag:
         description: '"标签列表json数组"'
-        items:
-          $ref: '#/definitions/modelquestion.Tags'
-        type: array
+        type: string
       title:
         description: '"标题"'
         type: string
-    required:
-    - id
     type: object
-  modeluser.AddUserRequest:
+  model_user.AddUserRequest:
     properties:
       avatar_url:
         type: string
@@ -220,7 +219,7 @@ definitions:
     - user_account
     - user_password
     type: object
-  modeluser.AdminUserQueryRequest:
+  model_user.AdminUserQueryRequest:
     properties:
       create_time:
         description: 创建时间
@@ -241,7 +240,7 @@ definitions:
         description: 匿名用户，普通用户，管理员，禁用用户
         type: string
     type: object
-  modeluser.EditUserRequest:
+  model_user.EditUserRequest:
     properties:
       avatar_url:
         type: string
@@ -253,24 +252,15 @@ definitions:
         type: string
       user_role:
         type: string
-    required:
-    - user_account
     type: object
-  modeluser.LoginUserRequest:
+  model_user.LoginUserRequest:
     properties:
       user_account:
-        maxLength: 32
-        minLength: 3
         type: string
       user_password:
-        maxLength: 32
-        minLength: 7
         type: string
-    required:
-    - user_account
-    - user_password
     type: object
-  modeluser.ReturnAdminUser:
+  model_user.ReturnAdminUser:
     properties:
       avatar_url:
         type: string
@@ -285,7 +275,7 @@ definitions:
       user_role:
         type: string
     type: object
-  modeluser.ReturnUser:
+  model_user.ReturnUser:
     properties:
       avatar_url:
         type: string
@@ -298,18 +288,16 @@ definitions:
       user_name:
         type: string
     type: object
-  modeluser.UpdateUserRequest:
+  model_user.UpdateUserRequest:
     properties:
       avatar_url:
         type: string
       user_name:
         type: string
       user_password:
-        maxLength: 32
-        minLength: 7
         type: string
     type: object
-  modeluser.UserQueryRequest:
+  model_user.UserQueryRequest:
     properties:
       id:
         description: id
@@ -319,14 +307,6 @@ definitions:
         type: string
       user_name:
         description: 用户昵称
-        type: string
-    type: object
-  utils.ApiResponse:
-    properties:
-      code:
-        type: integer
-      data: {}
-      msg:
         type: string
     type: object
 info:
@@ -345,7 +325,7 @@ paths:
         name: question
         required: true
         schema:
-          $ref: '#/definitions/modelquestion.AddQuestionRequest'
+          $ref: '#/definitions/model_question.AddQuestionRequest'
       produces:
       - application/json
       responses:
@@ -353,7 +333,7 @@ paths:
           description: add successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -362,7 +342,7 @@ paths:
           description: add failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -388,7 +368,7 @@ paths:
           description: delete  successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -397,7 +377,7 @@ paths:
           description: delete failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -416,7 +396,7 @@ paths:
         name: question
         required: true
         schema:
-          $ref: '#/definitions/modelquestion.UpdateQuestionRequest'
+          $ref: '#/definitions/model_question.UpdateQuestionRequest'
       produces:
       - application/json
       responses:
@@ -424,7 +404,7 @@ paths:
           description: update successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -433,7 +413,7 @@ paths:
           description: update failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -459,16 +439,16 @@ paths:
           description: get question successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/modelquestion.ReturnQuestion'
+                  $ref: '#/definitions/model_question.ReturnQuestion'
               type: object
         "404":
           description: "EditUserRequest failed\"\t\"get question failed"
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -486,7 +466,7 @@ paths:
         name: question
         required: true
         schema:
-          $ref: '#/definitions/modelquestion.QueryQuestionRequest'
+          $ref: '#/definitions/model_question.QueryQuestionRequest'
       produces:
       - application/json
       responses:
@@ -494,18 +474,18 @@ paths:
           description: get questions successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/modelquestion.ReturnQuestion'
+                    $ref: '#/definitions/model_question.ReturnQuestion'
                   type: array
               type: object
         "404":
           description: "EditUserRequest failed\"\t\"get questions failed"
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -531,16 +511,16 @@ paths:
           description: query  successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/modelquestion.QSReturn'
+                  $ref: '#/definitions/model_question.ReturnQS'
               type: object
         "404":
           description: query failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -558,7 +538,7 @@ paths:
         name: query
         required: true
         schema:
-          $ref: '#/definitions/modelquestion.QueryQuestionSubmitRequest'
+          $ref: '#/definitions/model_question.QueryQuestionSubmitRequest'
       produces:
       - application/json
       responses:
@@ -566,18 +546,18 @@ paths:
           description: query  successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/modelquestion.QSReturn'
+                    $ref: '#/definitions/model_question.ReturnQS'
                   type: array
               type: object
         "404":
           description: query failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -593,10 +573,10 @@ paths:
       parameters:
       - description: submit code
         in: body
-        name: modelquestion
+        name: model_question
         required: true
         schema:
-          $ref: '#/definitions/modelquestion.AddQuestionSubmitRequest'
+          $ref: '#/definitions/model_question.AddQuestionSubmitRequest'
       produces:
       - application/json
       responses:
@@ -604,7 +584,7 @@ paths:
           description: submit success
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: string
@@ -613,7 +593,7 @@ paths:
           description: submit failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -639,7 +619,7 @@ paths:
           description: DeleteUser successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -648,7 +628,7 @@ paths:
           description: DeleteUser failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -667,7 +647,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/modeluser.AdminUserQueryRequest'
+          $ref: '#/definitions/model_user.AdminUserQueryRequest'
       produces:
       - application/json
       responses:
@@ -675,18 +655,18 @@ paths:
           description: Query successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/modeluser.ReturnAdminUser'
+                    $ref: '#/definitions/model_user.ReturnAdminUser'
                   type: array
               type: object
         "404":
           description: Query failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -705,7 +685,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/modeluser.EditUserRequest'
+          $ref: '#/definitions/model_user.EditUserRequest'
       produces:
       - application/json
       responses:
@@ -713,7 +693,7 @@ paths:
           description: EditUserRequest successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -722,7 +702,7 @@ paths:
           description: EditUserRequest failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -741,7 +721,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/modeluser.LoginUserRequest'
+          $ref: '#/definitions/model_user.LoginUserRequest'
       produces:
       - application/json
       responses:
@@ -749,16 +729,16 @@ paths:
           description: Common successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/modeluser.ReturnUser'
+                  $ref: '#/definitions/model_user.ReturnUser'
               type: object
         "404":
           description: Common failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -776,7 +756,7 @@ paths:
           description: Logout successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -785,7 +765,7 @@ paths:
           description: Logout failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -804,7 +784,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/modeluser.UserQueryRequest'
+          $ref: '#/definitions/model_user.UserQueryRequest'
       produces:
       - application/json
       responses:
@@ -812,18 +792,18 @@ paths:
           description: Query successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/modeluser.ReturnUser'
+                    $ref: '#/definitions/model_user.ReturnUser'
                   type: array
               type: object
         "404":
           description: Query failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -842,7 +822,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/modeluser.AddUserRequest'
+          $ref: '#/definitions/model_user.AddUserRequest'
       produces:
       - application/json
       responses:
@@ -850,7 +830,7 @@ paths:
           description: Success registered
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -859,7 +839,7 @@ paths:
           description: Register failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -878,7 +858,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/modeluser.UpdateUserRequest'
+          $ref: '#/definitions/model_user.UpdateUserRequest'
       produces:
       - application/json
       responses:
@@ -886,7 +866,7 @@ paths:
           description: UpdateUserRequest successful
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object
@@ -895,7 +875,7 @@ paths:
           description: UpdateUserRequest failed
           schema:
             allOf:
-            - $ref: '#/definitions/utils.ApiResponse'
+            - $ref: '#/definitions/api_response.ApiResponse'
             - properties:
                 data:
                   type: object

@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
@@ -14,9 +15,10 @@ import (
 )
 
 type Result struct {
-	Logs     string
-	CostTime time.Duration
-	Memory   int64
+	ExitCode   int
+	ExecResult string
+	CostTime   int64
+	Memory     uint64
 }
 
 const (
@@ -43,6 +45,7 @@ func Docker(codePath string, input string) (Result, error) {
 		log.Printf("container initialization error: %v", err)
 		return Result{}, err
 	}
+
 	// 将文件编译后复制到容器中
 	tarReader, err := archive.Tar(codePath, archive.Uncompressed)
 	if err != nil {
@@ -61,11 +64,17 @@ func Docker(codePath string, input string) (Result, error) {
 		return Result{}, err
 	}
 
-	//获取执行结果
-	result.Logs, err = getLogs(resp, cli)
-	result.CostTime, result.Memory, err = getStats(resp, cli)
+	//获取执行状态信息
+	result.ExitCode, result.CostTime, result.Memory, err = getStats(resp, cli)
 	if err != nil {
 		log.Println("get stats error", err)
+		return Result{}, err
+	}
+
+	//获取执行结果
+	result.ExecResult, err = getLogs(resp, cli)
+	if err != nil {
+		log.Println("get logs error", err)
 		return Result{}, err
 	}
 
@@ -73,10 +82,11 @@ func Docker(codePath string, input string) (Result, error) {
 	err = cli.ContainerRemove(ctx, resp.ID, container.RemoveOptions{
 		Force: true,
 	})
+
 	if err != nil {
 		log.Println("container remove error", err)
-		return Result{}, err
 	}
+
 	return result, nil
 }
 
@@ -109,7 +119,7 @@ func initContainer(cli *client.Client, filePath string, input string) (container
 		StopTimeout:  timeout,
 
 		Cmd: strSlice,
-	}, &container.HostConfig{ReadonlyRootfs: true}, nil, nil, "")
+	}, nil, nil, nil, "")
 	if err != nil {
 		return container.CreateResponse{}, err
 	}
@@ -138,27 +148,43 @@ func getLogs(resp container.CreateResponse, cli *client.Client) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	return string(logs), nil
+	res := strings.ReplaceAll(string(logs), "\r\n", "")
+	return res, nil
 }
 
-func getStats(resp container.CreateResponse, cli *client.Client) (time.Duration, int64, error) {
+func getStats(resp container.CreateResponse, cli *client.Client) (int, int64, uint64, error) {
 	// 容器 ID
 	containerID := resp.ID
 
 	// 获取容器信息
 	inspect, err := cli.ContainerInspect(context.Background(), containerID)
 	if err != nil {
-		return 0, 0, err
+		return -1, 0, 0, err
 	}
+
+	//获取程序执行状态
+	startedAt := inspect.State.StartedAt
+	finishedAt := inspect.State.FinishedAt
+	exitCode := inspect.State.ExitCode
 
 	// 计算执行时间
-	createdAt, err := time.Parse(time.RFC3339Nano, inspect.Created)
+	startTime, err := time.Parse(time.RFC3339, startedAt)
+	finishTime, err := time.Parse(time.RFC3339Nano, finishedAt)
 	if err != nil {
-		return 0, 0, err
+		return -1, 0, 0, err
 	}
-	executionTime := time.Since(createdAt)
+	executionTime := finishTime.Sub(startTime) * time.Nanosecond
+	miniseconds := executionTime.Milliseconds()
 
+	stats, err := cli.ContainerStats(context.Background(), containerID, false)
+
+	defer stats.Body.Close()
+	// 解析统计信息
+	var containerStats types.StatsJSON
+	if err := json.NewDecoder(stats.Body).Decode(&containerStats); err != nil {
+		log.Fatalf("Error decoding container stats: %v", err)
+	}
+	memoryUsage := containerStats.MemoryStats.Usage
 	// 获取内存使用量
-	memoryUsage := inspect.HostConfig.Memory
-	return executionTime, memoryUsage, nil
+	return exitCode, miniseconds, memoryUsage, nil
 }

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/xissg/userManageSystem/core/docker"
-	"github.com/xissg/userManageSystem/entity/modelquestion"
+	"github.com/xissg/userManageSystem/entity/model_question"
 	"log"
 	"os"
 	"os/exec"
@@ -23,11 +23,11 @@ type JudgeContext struct {
 	//"用户代码"
 	Code string `json:"code" `
 	// "判题用例json数组"
-	JudgeCase []modelquestion.JudgeCase `json:"judge_case" `
+	JudgeCase []model_question.JudgeCase `json:"judge_case" `
 }
 
-func ToJudgeContext(submit *modelquestion.QuestionSubmit, question *modelquestion.Question) *JudgeContext {
-	var judgeCase []modelquestion.JudgeCase
+func ToJudgeContext(submit *model_question.QuestionSubmit, question *model_question.Question) *JudgeContext {
+	var judgeCase []model_question.JudgeCase
 	err := json.Unmarshal([]byte(question.JudgeCase), &judgeCase)
 	if err != nil {
 		return nil
@@ -213,8 +213,7 @@ func (s *SanBox) touchAndWrite(folderPath string, ctx *JudgeContext) error {
 
 // 删除临时文件
 func (s *SanBox) deleteFile() error {
-	err := os.Remove(s.filePath)
-	err = os.Remove(s.codePath)
+	err := os.RemoveAll(filepath.Dir(s.filePath))
 	if err != nil {
 		return err
 	}

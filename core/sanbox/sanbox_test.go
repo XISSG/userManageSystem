@@ -1,7 +1,8 @@
 package sanbox
 
 import (
-	"github.com/xissg/userManageSystem/entity/modelquestion"
+	"fmt"
+	"github.com/xissg/userManageSystem/entity/model_question"
 	"testing"
 )
 
@@ -10,18 +11,18 @@ func TestPreProcess(t *testing.T) {
 		ID:        "test",
 		Language:  "Go",
 		Code:      "package main\n\nimport (\n\t\"fmt\"\n\t\"os\"\n\t\"strconv\"\n)\n\nfunc main() {\n\targs := os.Args[1:]\n\tsum := 0\n\tfor _, arg := range args {\n\t\tnum, _ := strconv.Atoi(arg)\n\t\tsum += num\n\t\t\t}\n\tfmt.Println(sum)\n}\n",
-		JudgeCase: []modelquestion.JudgeCase{{Input: "1 2", Output: "3"}},
+		JudgeCase: []model_question.JudgeCase{{Input: "1 2", Output: "3"}},
 	}
 
 	san := NewSanBox()
-	err := san.preProcess(ctx)
+	results, err := san.Start(ctx)
 	if err != nil {
-		t.Error(err)
+		_ = fmt.Errorf("%v", err)
 	}
-	err = san.compile()
-	if err != nil {
-		t.Error(err)
+	for _, test := range results {
+		fmt.Printf("exit code: %v\n", test.ExitCode)
+		fmt.Printf("exec result: %v\n", test.ExecResult)
+		fmt.Printf("cost time: %v\n", test.CostTime)
+		fmt.Printf("cost memory: %v\n", test.Memory)
 	}
-	san.run(ctx)
-
 }

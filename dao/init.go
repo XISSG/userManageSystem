@@ -27,7 +27,7 @@ func readConfig(database string) *conf.Config {
 
 // InitDB init database connection
 func InitDB() *gorm.DB {
-	config := readConfig("mysql")
+	config := readConfig("mysql.yaml")
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%v)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		config.User,

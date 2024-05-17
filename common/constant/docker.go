@@ -7,10 +7,6 @@ const (
 	CompileError        = "Compile Error"
 	MemoryLimitExceeded = "Memory Limit Exceeded"
 	TimeLimitExceeded   = "Time Limit Exceeded"
-	PresentationError   = "Presentation Error"
-	OutputLimitExceeded = "Output Limit Exceeded"
-	Waiting             = "Waiting"
-	DangerousOperation  = "Dangerous Operation"
 	RuntimeError        = "Runtime Error"
 	SystemError         = "System Error"
 )
@@ -30,7 +26,4 @@ const (
 	C      = "c"
 	Cpp    = "cpp"
 	Go     = "go"
-	Js     = "js"
-	Php    = " php"
-	Ts     = "ts"
 )

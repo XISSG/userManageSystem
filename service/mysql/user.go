@@ -2,7 +2,7 @@ package mysql
 
 import (
 	"github.com/xissg/userManageSystem/common/constant"
-	"github.com/xissg/userManageSystem/entity/modeluser"
+	"github.com/xissg/userManageSystem/entity/model_user"
 	"gorm.io/gorm"
 )
 
@@ -19,12 +19,12 @@ func NewUserService(db *gorm.DB) *UserService {
 
 /**
  * @Description: 新增用户
- * @param user modeluser.User
+ * @param user model_user.User
  * @return error
  * @author xissg
  */
-func (us *UserService) AddUser(user modeluser.User) error {
-	err := us.db.AutoMigrate(&modeluser.User{})
+func (us *UserService) AddUser(user model_user.User) error {
+	err := us.db.AutoMigrate(&model_user.User{})
 	if err != nil {
 		return err
 	}
@@ -44,13 +44,13 @@ func (us *UserService) AddUser(user modeluser.User) error {
 /**
  * @Description: 获取用户
  * @param accountName string
- * @return modeluser.User
+ * @return model_user.User
  * @return error
  * @author xissg
  */
-func (us *UserService) GetUser(accountName string) (modeluser.User, error) {
-	_ = us.db.AutoMigrate(&modeluser.User{})
-	var res modeluser.User
+func (us *UserService) GetUser(accountName string) (model_user.User, error) {
+	_ = us.db.AutoMigrate(&model_user.User{})
+	var res model_user.User
 	tx := us.db.Table("user").Where("user_account = ? AND is_delete = ?", accountName, constant.ALIVE).First(&res)
 
 	return res, tx.Error
@@ -58,14 +58,14 @@ func (us *UserService) GetUser(accountName string) (modeluser.User, error) {
 
 /**
  * @Description: 获取用户列表
- * @param queryModel modeluser.AdminUserQueryRequest
- * @return []modeluser.User
+ * @param queryModel model_user.AdminUserQueryRequest
+ * @return []model_user.User
  * @return error
  * @author xissg
  */
-func (us *UserService) GetUserList(queryModel modeluser.AdminUserQueryRequest) ([]modeluser.User, error) {
-	var users []modeluser.User
-	err := us.db.AutoMigrate(&modeluser.User{})
+func (us *UserService) GetUserList(queryModel model_user.AdminUserQueryRequest) ([]model_user.User, error) {
+	var users []model_user.User
+	err := us.db.AutoMigrate(&model_user.User{})
 	if err != nil {
 		return nil, err
 	}
@@ -80,12 +80,12 @@ func (us *UserService) GetUserList(queryModel modeluser.AdminUserQueryRequest) (
 
 /**
  * @Description: 更新用户信息
- * @param modeluser.User
+ * @param model_user.User
  * @return error
  * @author xissg
  */
-func (us *UserService) UpdateUser(user modeluser.User) error {
-	err := us.db.AutoMigrate(&modeluser.User{})
+func (us *UserService) UpdateUser(user model_user.User) error {
+	err := us.db.AutoMigrate(&model_user.User{})
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (us *UserService) UpdateUser(user modeluser.User) error {
  * @author xissg
  */
 func (us *UserService) DeleteUser(accountName string) error {
-	err := us.db.AutoMigrate(&modeluser.User{})
+	err := us.db.AutoMigrate(&model_user.User{})
 	if err != nil {
 		return err
 	}

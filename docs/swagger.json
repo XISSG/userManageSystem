@@ -26,7 +26,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modelquestion.AddQuestionRequest"
+                            "$ref": "#/definitions/model_question.AddQuestionRequest"
                         }
                     }
                 ],
@@ -36,7 +36,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -54,7 +54,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -98,7 +98,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -116,7 +116,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -152,7 +152,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modelquestion.UpdateQuestionRequest"
+                            "$ref": "#/definitions/model_question.UpdateQuestionRequest"
                         }
                     }
                 ],
@@ -162,7 +162,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -180,7 +180,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -224,13 +224,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/modelquestion.ReturnQuestion"
+                                            "$ref": "#/definitions/model_question.ReturnQuestion"
                                         }
                                     }
                                 }
@@ -242,7 +242,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -276,7 +276,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modelquestion.QueryQuestionRequest"
+                            "$ref": "#/definitions/model_question.QueryQuestionRequest"
                         }
                     }
                 ],
@@ -286,7 +286,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -294,7 +294,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/modelquestion.ReturnQuestion"
+                                                "$ref": "#/definitions/model_question.ReturnQuestion"
                                             }
                                         }
                                     }
@@ -307,7 +307,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -351,13 +351,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/modelquestion.QSReturn"
+                                            "$ref": "#/definitions/model_question.ReturnQS"
                                         }
                                     }
                                 }
@@ -369,7 +369,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -403,7 +403,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modelquestion.QueryQuestionSubmitRequest"
+                            "$ref": "#/definitions/model_question.QueryQuestionSubmitRequest"
                         }
                     }
                 ],
@@ -413,7 +413,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -421,7 +421,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/modelquestion.QSReturn"
+                                                "$ref": "#/definitions/model_question.ReturnQS"
                                             }
                                         }
                                     }
@@ -434,7 +434,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -466,11 +466,11 @@
                 "parameters": [
                     {
                         "description": "submit code",
-                        "name": "modelquestion",
+                        "name": "model_question",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modelquestion.AddQuestionSubmitRequest"
+                            "$ref": "#/definitions/model_question.AddQuestionSubmitRequest"
                         }
                     }
                 ],
@@ -480,7 +480,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -498,7 +498,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -542,7 +542,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -560,7 +560,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -596,7 +596,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modeluser.AdminUserQueryRequest"
+                            "$ref": "#/definitions/model_user.AdminUserQueryRequest"
                         }
                     }
                 ],
@@ -606,7 +606,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -614,7 +614,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/modeluser.ReturnAdminUser"
+                                                "$ref": "#/definitions/model_user.ReturnAdminUser"
                                             }
                                         }
                                     }
@@ -627,7 +627,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -663,7 +663,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modeluser.EditUserRequest"
+                            "$ref": "#/definitions/model_user.EditUserRequest"
                         }
                     }
                 ],
@@ -673,7 +673,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -691,7 +691,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -727,7 +727,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modeluser.LoginUserRequest"
+                            "$ref": "#/definitions/model_user.LoginUserRequest"
                         }
                     }
                 ],
@@ -737,13 +737,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/modeluser.ReturnUser"
+                                            "$ref": "#/definitions/model_user.ReturnUser"
                                         }
                                     }
                                 }
@@ -755,7 +755,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -787,7 +787,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -805,7 +805,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -841,7 +841,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modeluser.UserQueryRequest"
+                            "$ref": "#/definitions/model_user.UserQueryRequest"
                         }
                     }
                 ],
@@ -851,7 +851,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -859,7 +859,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/modeluser.ReturnUser"
+                                                "$ref": "#/definitions/model_user.ReturnUser"
                                             }
                                         }
                                     }
@@ -872,7 +872,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -908,7 +908,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modeluser.AddUserRequest"
+                            "$ref": "#/definitions/model_user.AddUserRequest"
                         }
                     }
                 ],
@@ -918,7 +918,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -936,7 +936,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -972,7 +972,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modeluser.UpdateUserRequest"
+                            "$ref": "#/definitions/model_user.UpdateUserRequest"
                         }
                     }
                 ],
@@ -982,7 +982,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1000,7 +1000,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.ApiResponse"
+                                    "$ref": "#/definitions/api_response.ApiResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1018,15 +1018,27 @@
         }
     },
     "definitions": {
-        "modelquestion.AddQuestionRequest": {
+        "api_response.ApiResponse": {
             "type": "object",
-            "required": [
-                "user_id"
-            ],
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "model_question.AddQuestionRequest": {
+            "type": "object",
             "properties": {
                 "answer": {
                     "description": "\"题目答案\"",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "content": {
                     "description": "\"内容\"",
@@ -1036,23 +1048,20 @@
                     "description": "\"判题用例json数组\"",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/modelquestion.JudgeCase"
+                        "$ref": "#/definitions/model_question.JudgeCase"
                     }
                 },
                 "judge_config": {
                     "description": "\"判题配置json对象\"",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/modelquestion.JudgeConfig"
+                            "$ref": "#/definitions/model_question.JudgeConfig"
                         }
                     ]
                 },
-                "tags": {
+                "tag": {
                     "description": "\"标签列表json数组\"",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/modelquestion.Tags"
-                    }
+                    "type": "string"
                 },
                 "title": {
                     "description": "\"标题\"",
@@ -1064,11 +1073,8 @@
                 }
             }
         },
-        "modelquestion.AddQuestionSubmitRequest": {
+        "model_question.AddQuestionSubmitRequest": {
             "type": "object",
-            "required": [
-                "question_id"
-            ],
             "properties": {
                 "code": {
                     "description": "\"用户代码\"",
@@ -1084,7 +1090,7 @@
                 }
             }
         },
-        "modelquestion.JudgeCase": {
+        "model_question.JudgeCase": {
             "type": "object",
             "properties": {
                 "input": {
@@ -1095,18 +1101,10 @@
                 }
             }
         },
-        "modelquestion.JudgeConfig": {
+        "model_question.JudgeConfig": {
             "type": "object",
-            "required": [
-                "memory_limit",
-                "stack_limit",
-                "time_limit"
-            ],
             "properties": {
                 "memory_limit": {
-                    "type": "integer"
-                },
-                "stack_limit": {
                     "type": "integer"
                 },
                 "time_limit": {
@@ -1114,7 +1112,7 @@
                 }
             }
         },
-        "modelquestion.JudgeInfo": {
+        "model_question.JudgeInfo": {
             "type": "object",
             "properties": {
                 "memory": {
@@ -1131,32 +1129,7 @@
                 }
             }
         },
-        "modelquestion.QSReturn": {
-            "type": "object",
-            "properties": {
-                "judge_info": {
-                    "description": "\"判题信息json对象(包含上面的枚举值)",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/modelquestion.JudgeInfo"
-                        }
-                    ]
-                },
-                "language": {
-                    "description": "\"编程语言\"",
-                    "type": "string"
-                },
-                "question_id": {
-                    "description": "题目id",
-                    "type": "string"
-                },
-                "status": {
-                    "description": "\"判题状态（0-待判题,1-判题中,2-成功,3-失败)\",",
-                    "type": "integer"
-                }
-            }
-        },
-        "modelquestion.QueryQuestionRequest": {
+        "model_question.QueryQuestionRequest": {
             "type": "object",
             "properties": {
                 "content": {
@@ -1170,15 +1143,16 @@
                     "description": "\"判题用例json数组\"",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/modelquestion.JudgeCase"
+                        "$ref": "#/definitions/model_question.JudgeCase"
                     }
                 },
-                "tags": {
+                "language": {
+                    "description": "语言",
+                    "type": "string"
+                },
+                "tag": {
                     "description": "\"标签列表json数组\"",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/modelquestion.Tags"
-                    }
+                    "type": "string"
                 },
                 "title": {
                     "description": "\"标题\"",
@@ -1190,9 +1164,13 @@
                 }
             }
         },
-        "modelquestion.QueryQuestionSubmitRequest": {
+        "model_question.QueryQuestionSubmitRequest": {
             "type": "object",
             "properties": {
+                "answer": {
+                    "description": "\"答案\"",
+                    "type": "string"
+                },
                 "language": {
                     "description": "\"编程语言\"",
                     "type": "string"
@@ -1211,12 +1189,49 @@
                 }
             }
         },
-        "modelquestion.ReturnQuestion": {
+        "model_question.ReturnQS": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "description": "\"答案\"",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "judge_info": {
+                    "description": "\"判题信息json对象(包含上面的枚举值)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model_question.JudgeInfo"
+                    }
+                },
+                "language": {
+                    "description": "\"编程语言\"",
+                    "type": "string"
+                },
+                "question_id": {
+                    "description": "题目id",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "\"判题状态（0-待判题,1-判题中,2-成功,3-失败)\",",
+                    "type": "integer"
+                }
+            }
+        },
+        "model_question.ReturnQuestion": {
             "type": "object",
             "properties": {
                 "accept_num": {
                     "description": "\"题目通过数\"",
                     "type": "integer"
+                },
+                "answer": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "content": {
                     "description": "\"内容\"",
@@ -1229,7 +1244,7 @@
                     "description": "\"判题配置json对象\"",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/modelquestion.JudgeConfig"
+                            "$ref": "#/definitions/model_question.JudgeConfig"
                         }
                     ]
                 },
@@ -1237,12 +1252,9 @@
                     "description": "\"题目提交数",
                     "type": "integer"
                 },
-                "tags": {
+                "tag": {
                     "description": "\"标签列表json数组\"",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/modelquestion.Tags"
-                    }
+                    "type": "string"
                 },
                 "thum_num": {
                     "description": "\"点赞数\"",
@@ -1258,29 +1270,15 @@
                 }
             }
         },
-        "modelquestion.Tags": {
+        "model_question.UpdateQuestionRequest": {
             "type": "object",
-            "properties": {
-                "easy": {
-                    "type": "string"
-                },
-                "hard": {
-                    "type": "string"
-                },
-                "medium": {
-                    "type": "string"
-                }
-            }
-        },
-        "modelquestion.UpdateQuestionRequest": {
-            "type": "object",
-            "required": [
-                "id"
-            ],
             "properties": {
                 "answer": {
                     "description": "\"题目答案\"",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "content": {
                     "description": "\"内容\"",
@@ -1293,23 +1291,20 @@
                     "description": "\"判题用例json数组\"",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/modelquestion.JudgeCase"
+                        "$ref": "#/definitions/model_question.JudgeCase"
                     }
                 },
                 "judge_config": {
                     "description": "\"判题配置json对象\"",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/modelquestion.JudgeConfig"
+                            "$ref": "#/definitions/model_question.JudgeConfig"
                         }
                     ]
                 },
-                "tags": {
+                "tag": {
                     "description": "\"标签列表json数组\"",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/modelquestion.Tags"
-                    }
+                    "type": "string"
                 },
                 "title": {
                     "description": "\"标题\"",
@@ -1317,7 +1312,7 @@
                 }
             }
         },
-        "modeluser.AddUserRequest": {
+        "model_user.AddUserRequest": {
             "type": "object",
             "required": [
                 "user_account",
@@ -1342,7 +1337,7 @@
                 }
             }
         },
-        "modeluser.AdminUserQueryRequest": {
+        "model_user.AdminUserQueryRequest": {
             "type": "object",
             "properties": {
                 "create_time": {
@@ -1371,11 +1366,8 @@
                 }
             }
         },
-        "modeluser.EditUserRequest": {
+        "model_user.EditUserRequest": {
             "type": "object",
-            "required": [
-                "user_account"
-            ],
             "properties": {
                 "avatar_url": {
                     "type": "string"
@@ -1394,26 +1386,18 @@
                 }
             }
         },
-        "modeluser.LoginUserRequest": {
+        "model_user.LoginUserRequest": {
             "type": "object",
-            "required": [
-                "user_account",
-                "user_password"
-            ],
             "properties": {
                 "user_account": {
-                    "type": "string",
-                    "maxLength": 32,
-                    "minLength": 3
+                    "type": "string"
                 },
                 "user_password": {
-                    "type": "string",
-                    "maxLength": 32,
-                    "minLength": 7
+                    "type": "string"
                 }
             }
         },
-        "modeluser.ReturnAdminUser": {
+        "model_user.ReturnAdminUser": {
             "type": "object",
             "properties": {
                 "avatar_url": {
@@ -1436,7 +1420,7 @@
                 }
             }
         },
-        "modeluser.ReturnUser": {
+        "model_user.ReturnUser": {
             "type": "object",
             "properties": {
                 "avatar_url": {
@@ -1456,7 +1440,7 @@
                 }
             }
         },
-        "modeluser.UpdateUserRequest": {
+        "model_user.UpdateUserRequest": {
             "type": "object",
             "properties": {
                 "avatar_url": {
@@ -1466,13 +1450,11 @@
                     "type": "string"
                 },
                 "user_password": {
-                    "type": "string",
-                    "maxLength": 32,
-                    "minLength": 7
+                    "type": "string"
                 }
             }
         },
-        "modeluser.UserQueryRequest": {
+        "model_user.UserQueryRequest": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1485,18 +1467,6 @@
                 },
                 "user_name": {
                     "description": "用户昵称",
-                    "type": "string"
-                }
-            }
-        },
-        "utils.ApiResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {},
-                "msg": {
                     "type": "string"
                 }
             }

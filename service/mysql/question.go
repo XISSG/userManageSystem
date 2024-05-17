@@ -2,7 +2,7 @@ package mysql
 
 import (
 	"github.com/xissg/userManageSystem/common/constant"
-	"github.com/xissg/userManageSystem/entity/modelquestion"
+	"github.com/xissg/userManageSystem/entity/model_question"
 	"gorm.io/gorm"
 )
 
@@ -18,12 +18,12 @@ func NewQuestionMysqlService(db *gorm.DB) *QuestionService {
 
 /**
  * @Description: 添加题目
- * @param q modelquestion.Question
+ * @param q model_question.Question
  * @return error
  * @author xissg
  */
-func (qds *QuestionService) AddQuestion(q modelquestion.Question) error {
-	err := qds.db.AutoMigrate(&modelquestion.Question{})
+func (qds *QuestionService) AddQuestion(q model_question.Question) error {
+	err := qds.db.AutoMigrate(&model_question.Question{})
 	if err != nil {
 		return err
 	}
@@ -40,12 +40,12 @@ func (qds *QuestionService) AddQuestion(q modelquestion.Question) error {
 
 /**
  * @Description: 更新题目
- * @param q modelquestion.Question
+ * @param q model_question.Question
  * @return error
  * @author xissg
  */
-func (qds *QuestionService) UpdateQuestion(q modelquestion.Question) error {
-	err := qds.db.AutoMigrate(&modelquestion.Question{})
+func (qds *QuestionService) UpdateQuestion(q model_question.Question) error {
+	err := qds.db.AutoMigrate(&model_question.Question{})
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (qds *QuestionService) UpdateQuestion(q modelquestion.Question) error {
  * @author xissg
  */
 func (qds *QuestionService) DeleteQuestion(questionId string) error {
-	err := qds.db.AutoMigrate(&modelquestion.Question{})
+	err := qds.db.AutoMigrate(&model_question.Question{})
 	if err != nil {
 		return err
 	}
@@ -91,45 +91,41 @@ func (qds *QuestionService) DeleteQuestion(questionId string) error {
 /**
  * @Description: 查询题目
  * @param questionId string
- * @return modelquestion.Question
+ * @return model_question.Question
  * @return error
  * @author xissg
  */
-func (qds *QuestionService) GetQuestion(questionId string) (modelquestion.Question, error) {
-	err := qds.db.AutoMigrate(&modelquestion.Question{})
+func (qds *QuestionService) GetQuestion(questionId string) (model_question.Question, error) {
+	err := qds.db.AutoMigrate(&model_question.Question{})
 	if err != nil {
-		return modelquestion.Question{}, err
+		return model_question.Question{}, err
 	}
 
-	var res modelquestion.Question
-	tx := qds.db.Begin()
-	err = tx.Table("question").Where("id = ? AND is_delete = ?", questionId, constant.ALIVE).First(&res).Error
+	var res model_question.Question
+	err = qds.db.Table("question").Where("id = ? AND is_delete = ?", questionId, constant.ALIVE).First(&res).Error
 	if err != nil {
-		tx.Rollback()
 
-		return modelquestion.Question{}, err
+		return model_question.Question{}, err
 	}
-
-	tx.Commit()
 
 	return res, nil
 }
 
 /**
  * @Description: 查询题目列表
- * @param questionList modelquestion.CommonQueryQuestion
- * @return []modelquestion.Question
+ * @param questionList model_question.CommonQueryQuestion
+ * @return []model_question.Question
  * @return error
  * @author xissg
  */
-func (qds *QuestionService) GetQuestionList(questionList modelquestion.CommonQueryQuestion) ([]modelquestion.Question, error) {
+func (qds *QuestionService) GetQuestionList(questionList model_question.CommonQueryQuestion) ([]model_question.Question, error) {
 	//TODO:使用分页查询
-	err := qds.db.AutoMigrate(&modelquestion.Question{})
+	err := qds.db.AutoMigrate(&model_question.Question{})
 	if err != nil {
 		return nil, err
 	}
 
-	var res []modelquestion.Question
+	var res []model_question.Question
 	tx := qds.db.Begin()
 	err = tx.Table("question").Where(&questionList).Find(&res).Error
 	if err != nil {
