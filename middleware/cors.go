@@ -16,7 +16,7 @@ func CORS(c *gin.Context) {
 
 	// 放行所有OPTIONS方法
 	if method == "OPTIONS" {
-		c.AbortWithStatus(http.StatusOK)
+		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
 	// 处理请求

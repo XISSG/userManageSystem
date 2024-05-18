@@ -45,6 +45,9 @@ type AdminUserQueryRequest struct {
 	IsDelete int8 `json:"is_delete" `
 	// 匿名用户，普通用户，管理员，禁用用户
 	UserRole string `json:"user_role" `
+
+	Page     int `json:"page"`
+	PageSize int `json:"page_size"`
 }
 
 func AdminUserQueryToUser(admin AdminUserQueryRequest) User {

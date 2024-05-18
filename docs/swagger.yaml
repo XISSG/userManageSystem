@@ -81,14 +81,10 @@ definitions:
         type: string
       id:
         type: string
-      judge_case:
-        description: '"判题用例json数组"'
-        items:
-          $ref: '#/definitions/model_question.JudgeCase'
-        type: array
-      language:
-        description: 语言
-        type: string
+      page:
+        type: integer
+      page_size:
+        type: integer
       tag:
         description: '"标签列表json数组"'
         type: string
@@ -107,6 +103,10 @@ definitions:
       language:
         description: '"编程语言"'
         type: string
+      page:
+        type: integer
+      page_size:
+        type: integer
       question_id:
         description: '"判题id"'
         type: string
@@ -145,6 +145,7 @@ definitions:
         description: '"题目通过数"'
         type: integer
       answer:
+        description: '"题目答案"'
         items:
           type: string
         type: array
@@ -230,6 +231,10 @@ definitions:
       is_delete:
         description: 是否删除
         type: integer
+      page:
+        type: integer
+      page_size:
+        type: integer
       user_account:
         description: 用户账号
         type: string
@@ -302,6 +307,12 @@ definitions:
       id:
         description: id
         type: string
+      page:
+        description: 查询页号
+        type: integer
+      page_size:
+        description: 查询页大小
+        type: integer
       user_account:
         description: 用户账号
         type: string
@@ -314,13 +325,13 @@ info:
   title: 用户管理系统
   version: "0.1"
 paths:
-  /api/question/admin/create:
+  /api/question/admin/add:
     post:
       consumes:
       - application/json
-      description: add question
+      description: Add question
       parameters:
-      - description: add question
+      - description: Add question
         in: body
         name: question
         required: true
@@ -330,7 +341,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: add successful
+          description: Add question success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -338,8 +349,8 @@ paths:
                 data:
                   type: object
               type: object
-        "404":
-          description: add failed
+        "400":
+          description: Add  question fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -347,16 +358,16 @@ paths:
                 data:
                   type: object
               type: object
-      summary: add question
+      summary: Add question
       tags:
       - Question
   /api/question/admin/delete:
     get:
       consumes:
       - application/json
-      description: delete question
+      description: Delete question
       parameters:
-      - description: delete Question
+      - description: Question id
         in: path
         name: id
         required: true
@@ -365,7 +376,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: delete  successful
+          description: Delete  success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -373,8 +384,8 @@ paths:
                 data:
                   type: object
               type: object
-        "404":
-          description: delete failed
+        "400":
+          description: Delete fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -382,16 +393,16 @@ paths:
                 data:
                   type: object
               type: object
-      summary: delete question
+      summary: Delete question
       tags:
       - Question
   /api/question/admin/update:
     post:
       consumes:
       - application/json
-      description: update question
+      description: Update question
       parameters:
-      - description: update question
+      - description: Update condition
         in: body
         name: question
         required: true
@@ -401,7 +412,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: update successful
+          description: Update success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -409,8 +420,8 @@ paths:
                 data:
                   type: object
               type: object
-        "404":
-          description: update failed
+        "400":
+          description: Update fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -418,16 +429,16 @@ paths:
                 data:
                   type: object
               type: object
-      summary: update question
+      summary: Update question
       tags:
       - Question
-  /api/question/get:
+  /api/question/query:
     get:
       consumes:
       - application/json
-      description: get question
+      description: Query question
       parameters:
-      - description: Get Question
+      - description: Question id
         in: path
         name: id
         required: true
@@ -436,7 +447,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: get question successful
+          description: Query question success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -444,8 +455,8 @@ paths:
                 data:
                   $ref: '#/definitions/model_question.ReturnQuestion'
               type: object
-        "404":
-          description: "EditUserRequest failed\"\t\"get question failed"
+        "400":
+          description: Query question fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -453,15 +464,15 @@ paths:
                 data:
                   type: object
               type: object
-      summary: get question
+      summary: Query question
       tags:
       - Question
     post:
       consumes:
       - application/json
-      description: get questions
+      description: Get question list
       parameters:
-      - description: Get Questions
+      - description: Query conditions
         in: body
         name: question
         required: true
@@ -471,7 +482,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: get questions successful
+          description: Get question list success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -481,8 +492,8 @@ paths:
                     $ref: '#/definitions/model_question.ReturnQuestion'
                   type: array
               type: object
-        "404":
-          description: "EditUserRequest failed\"\t\"get questions failed"
+        "400":
+          description: Get question list failed
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -490,88 +501,16 @@ paths:
                 data:
                   type: object
               type: object
-      summary: get questions
+      summary: Get question list
       tags:
       - Question
-  /api/submit/query:
-    get:
-      consumes:
-      - application/json
-      description: get question submit result
-      parameters:
-      - description: query
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: query  successful
-          schema:
-            allOf:
-            - $ref: '#/definitions/api_response.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/model_question.ReturnQS'
-              type: object
-        "404":
-          description: query failed
-          schema:
-            allOf:
-            - $ref: '#/definitions/api_response.ApiResponse'
-            - properties:
-                data:
-                  type: object
-              type: object
-      summary: get question submit result
-      tags:
-      - QuestionSubmit
+  /api/submit/add:
     post:
       consumes:
       - application/json
-      description: get question submit result
+      description: Submit
       parameters:
-      - description: queries
-        in: body
-        name: query
-        required: true
-        schema:
-          $ref: '#/definitions/model_question.QueryQuestionSubmitRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: query  successful
-          schema:
-            allOf:
-            - $ref: '#/definitions/api_response.ApiResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/model_question.ReturnQS'
-                  type: array
-              type: object
-        "404":
-          description: query failed
-          schema:
-            allOf:
-            - $ref: '#/definitions/api_response.ApiResponse'
-            - properties:
-                data:
-                  type: object
-              type: object
-      summary: get question submit result
-      tags:
-      - QuestionSubmit
-  /api/submit/submission:
-    post:
-      consumes:
-      - application/json
-      description: submit
-      parameters:
-      - description: submit code
+      - description: Submit code
         in: body
         name: model_question
         required: true
@@ -581,7 +520,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: submit success
+          description: Submit success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -589,8 +528,8 @@ paths:
                 data:
                   type: string
               type: object
-        "404":
-          description: submit failed
+        "400":
+          description: Submit failed
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -598,16 +537,88 @@ paths:
                 data:
                   type: object
               type: object
-      summary: submit
+      summary: Submit
+      tags:
+      - QuestionSubmit
+  /api/submit/query:
+    get:
+      consumes:
+      - application/json
+      description: Get question submit result
+      parameters:
+      - description: Query id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Query  success
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model_question.ReturnQS'
+              type: object
+        "400":
+          description: Query fail
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+      summary: Get question submit result
+      tags:
+      - QuestionSubmit
+    post:
+      consumes:
+      - application/json
+      description: Get question submit list
+      parameters:
+      - description: Query condition
+        in: body
+        name: query
+        required: true
+        schema:
+          $ref: '#/definitions/model_question.QueryQuestionSubmitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Query  success
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model_question.ReturnQS'
+                  type: array
+              type: object
+        "400":
+          description: Query fail
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.ApiResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+      summary: Get question submit list
       tags:
       - QuestionSubmit
   /api/user/admin/delete:
     get:
       consumes:
       - application/json
-      description: DeleteUser user information by user account
+      description: DeleteUser user  by user account
       parameters:
-      - description: Useraccount
+      - description: User account
         in: path
         name: user
         required: true
@@ -616,7 +627,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: DeleteUser successful
+          description: Delete user success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -624,8 +635,8 @@ paths:
                 data:
                   type: object
               type: object
-        "404":
-          description: DeleteUser failed
+        "400":
+          description: Delete user fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -633,7 +644,7 @@ paths:
                 data:
                   type: object
               type: object
-      summary: DeleteUser user by user account
+      summary: DeleteUser user
       tags:
       - User
   /api/user/admin/query:
@@ -652,7 +663,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Query successful
+          description: Query success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -662,8 +673,8 @@ paths:
                     $ref: '#/definitions/model_user.ReturnAdminUser'
                   type: array
               type: object
-        "404":
-          description: Query failed
+        "400":
+          description: Query fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -671,16 +682,16 @@ paths:
                 data:
                   type: object
               type: object
-      summary: Query user list for admin
+      summary: Admin query
       tags:
       - User
   /api/user/admin/update:
     post:
       consumes:
       - application/json
-      description: admin edit user information
+      description: Admin edit user information
       parameters:
-      - description: User Information
+      - description: User information
         in: body
         name: user
         required: true
@@ -690,7 +701,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: EditUserRequest successful
+          description: Edit user request success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -698,8 +709,8 @@ paths:
                 data:
                   type: object
               type: object
-        "404":
-          description: EditUserRequest failed
+        "400":
+          description: Edit user request fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -707,16 +718,16 @@ paths:
                 data:
                   type: object
               type: object
-      summary: admin edit user information
+      summary: Admin edit user information
       tags:
       - User
   /api/user/login:
     post:
       consumes:
       - application/json
-      description: Authenticate user login
+      description: User login
       parameters:
-      - description: User Information
+      - description: User information
         in: body
         name: user
         required: true
@@ -726,7 +737,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Common successful
+          description: Login success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -734,8 +745,8 @@ paths:
                 data:
                   $ref: '#/definitions/model_user.ReturnUser'
               type: object
-        "404":
-          description: Common failed
+        "400":
+          description: Login fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -743,7 +754,7 @@ paths:
                 data:
                   type: object
               type: object
-      summary: User login
+      summary: Login
       tags:
       - User
   /api/user/logout:
@@ -753,7 +764,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Logout successful
+          description: Logout success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -761,8 +772,8 @@ paths:
                 data:
                   type: object
               type: object
-        "404":
-          description: Logout failed
+        "400":
+          description: Logout fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -770,16 +781,16 @@ paths:
                 data:
                   type: object
               type: object
-      summary: User logout
+      summary: Logout
       tags:
       - User
   /api/user/query:
     post:
       consumes:
       - application/json
-      description: Get user information
+      description: Query user list
       parameters:
-      - description: queries
+      - description: Query
         in: body
         name: user
         required: true
@@ -789,7 +800,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Query successful
+          description: Query success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -799,8 +810,8 @@ paths:
                     $ref: '#/definitions/model_user.ReturnUser'
                   type: array
               type: object
-        "404":
-          description: Query failed
+        "400":
+          description: Query fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -817,7 +828,7 @@ paths:
       - application/json
       description: Register a new user
       parameters:
-      - description: User Information
+      - description: User information
         in: body
         name: user
         required: true
@@ -827,7 +838,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Success registered
+          description: Register success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -835,8 +846,8 @@ paths:
                 data:
                   type: object
               type: object
-        "404":
-          description: Register failed
+        "400":
+          description: Register fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -844,7 +855,7 @@ paths:
                 data:
                   type: object
               type: object
-      summary: User register
+      summary: Register
       tags:
       - User
   /api/user/update:
@@ -853,7 +864,7 @@ paths:
       - application/json
       description: Update user information
       parameters:
-      - description: User Information
+      - description: Update information
         in: body
         name: user
         required: true
@@ -863,7 +874,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: UpdateUserRequest successful
+          description: Update user request success
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -871,8 +882,8 @@ paths:
                 data:
                   type: object
               type: object
-        "404":
-          description: UpdateUserRequest failed
+        "400":
+          description: Update user request fail
           schema:
             allOf:
             - $ref: '#/definitions/api_response.ApiResponse'
@@ -880,7 +891,7 @@ paths:
                 data:
                   type: object
               type: object
-      summary: User update
+      summary: Update user
       tags:
       - User
 swagger: "2.0"

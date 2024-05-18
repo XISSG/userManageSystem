@@ -58,27 +58,27 @@ func NewServer() {
 			userGroup.GET("/logout", userController.Logout)
 
 			userGroup.POST("/register", userController.Register)
-			userGroup.POST("/query", userController.QueryUserList)
+			userGroup.POST("/query", userController.GetUserList)
 			userGroup.POST("/update", userController.UpdateUser)
 
 			//后台操作
-			userGroup.POST("/admin/query", userController.AdminQueryUserList)
+			userGroup.POST("/admin/query", userController.AdminGetUserList)
 			userGroup.POST("/admin/update", userController.EditUser)
-			userGroup.GET("/admin/delete/:useraccount", userController.DeleteUser)
+			userGroup.GET("/admin/delete/:account", userController.DeleteUser)
 		}
 		questionGroup := v1.Group("question")
 		{
-			questionGroup.GET("/get/:id", questionController.GetQuestion)
-			questionGroup.POST("/get", questionController.GetQuestionList)
+			questionGroup.GET("/query/:id", questionController.GetQuestion)
+			questionGroup.POST("/query", questionController.GetQuestionList)
 
-			questionGroup.POST("/admin/create", questionController.AddQuestion)
+			questionGroup.POST("/admin/add", questionController.AddQuestion)
 			questionGroup.GET("/admin/delete/:id", questionController.DeleteQuestion)
 			questionGroup.POST("/admin/update", questionController.UpdateQuestion)
 		}
 
 		questionSubmitGroup := v1.Group("submit")
 		{
-			questionSubmitGroup.POST("/submission", qsController.Submit)
+			questionSubmitGroup.POST("/add", qsController.Submit)
 			questionSubmitGroup.GET("/query/:id", qsController.GetQuestionSubmit)
 			questionSubmitGroup.POST("/query", qsController.GetQuestionSubmitList)
 		}

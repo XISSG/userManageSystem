@@ -94,6 +94,10 @@ type UserQueryRequest struct {
 	UserName string `json:"user_name" `
 	// 用户账号
 	UserAccount string `json:"user_account" `
+	//查询页号
+	Page int `json:"page"`
+	//查询页大小
+	PageSize int `json:"page_size"`
 }
 
 // UserQueryToCommonQuery 将其转为通用查询模型

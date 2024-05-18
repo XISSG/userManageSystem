@@ -20,7 +20,7 @@ WORKDIR /dist
 RUN cp /build/app .
 
 #暴露端口
-EXPOSE 8080
+EXPOSE 8082
 
 #启动容器时运行的命令
 CMD ["/dist/app"]

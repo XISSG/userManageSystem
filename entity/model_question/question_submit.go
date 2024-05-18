@@ -67,7 +67,9 @@ type QueryQuestionSubmitRequest struct {
 	//"创建用户id"
 	UserId string `json:"user_id"`
 	//"答案"
-	Answer string `json:"answer"`
+	Answer   string `json:"answer"`
+	Page     int    `json:"page"`
+	PageSize int    `json:"page_size"`
 }
 
 type CommonQueryQS struct {

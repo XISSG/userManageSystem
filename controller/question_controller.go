@@ -28,21 +28,21 @@ func NewQuestionController(questionService *mysql2.QuestionService, session *red
 
 // AddQuestion 添加题目
 //
-//	@Summary		add question
-//	@Description	add question
+//	@Summary		Add question
+//	@Description	Add question
 //	@Tags			Question
 //	@Accept			json
 //	@Produce		json
-//	@Param			question	body		model_question.AddQuestionRequest	true	"add question"
-//	@Success		200			{object}	api_response.ApiResponse{data=nil}			"add successful"
-//	@Failure		404			{object}	api_response.ApiResponse{data=nil}			"add failed"
-//	@Router			/api/question/admin/create    [post]
+//	@Param			question	body		model_question.AddQuestionRequest	true	"Add question"
+//	@Success		200			{object}	api_response.ApiResponse{data=nil}			"Add question success"
+//	@Failure		400			{object}	api_response.ApiResponse{data=nil}			"Add  question fail"
+//	@Router			/api/question/admin/add    [post]
 func (qc *QuestionController) AddQuestion(c *gin.Context) {
 
 	session, _ := qc.session.GetSession(c)
 	if session.UserRole != constant.Admin {
 		log.Printf("you are not allowed to create a new question")
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not allowed to create a new question").Response(api_response.AUTHERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "you are not allowed to create a new question").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -51,7 +51,7 @@ func (qc *QuestionController) AddQuestion(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&receiveQuestion); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "unmarshal error ").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "unmarshal error ").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -61,7 +61,7 @@ func (qc *QuestionController) AddQuestion(c *gin.Context) {
 	err := qc.checkQuestion(add)
 	if err != nil {
 		log.Printf("validate %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "validate error").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "validate error").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -70,7 +70,7 @@ func (qc *QuestionController) AddQuestion(c *gin.Context) {
 	result := model_question.QuestionToReturnQuestion(question)
 	if err != nil {
 		log.Printf("add model_question %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "add question error").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "add question error").Response(api_response.OPERATIONERR))
 		return
 	}
 
@@ -80,20 +80,20 @@ func (qc *QuestionController) AddQuestion(c *gin.Context) {
 
 // GetQuestion 获取题目
 //
-//	@Summary		get question
-//	@Description	get question
+//	@Summary		Query question
+//	@Description	Query question
 //	@Tags			Question
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string													true	"Get Question"
-//	@Success		200	{object}	api_response.ApiResponse{data=model_question.ReturnQuestion}	"get question successful"
-//	@Failure		404	{object}	api_response.ApiResponse{data=nil}								"EditUserRequest failed"	"get question failed"
-//	@Router			/api/question/get    [get]
+//	@Param			id	path		string													true	"Question id"
+//	@Success		200	{object}	api_response.ApiResponse{data=model_question.ReturnQuestion}	"Query question success"
+//	@Failure		400	{object}	api_response.ApiResponse{data=nil}								"Query question fail"
+//	@Router			/api/question/query    [get]
 func (qc *QuestionController) GetQuestion(c *gin.Context) {
 	session, err := qc.session.GetSession(c)
 	if session.UserRole != constant.Common && session.UserRole != constant.Admin {
 		log.Printf("you are not allowed to get a new question")
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not allowed to get a new question").Response(api_response.AUTHERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "you are not allowed to get a new question").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -101,7 +101,7 @@ func (qc *QuestionController) GetQuestion(c *gin.Context) {
 	question, err := qc.questionService.GetQuestion(id)
 	if err != nil {
 		log.Printf("query model_question %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "query question error").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "query question error").Response(api_response.OPERATIONERR))
 		return
 	}
 	res := model_question.QuestionToReturnQuestion(question)
@@ -114,20 +114,20 @@ func (qc *QuestionController) GetQuestion(c *gin.Context) {
 
 // GetQuestionList 获取题目
 //
-//	@Summary		get questions
-//	@Description	get questions
+//	@Summary		Get question list
+//	@Description	Get question list
 //	@Tags			Question
 //	@Accept			json
 //	@Produce		json
-//	@Param			question	body		model_question.QueryQuestionRequest							true	"Get Questions"
-//	@Success		200	{object}	api_response.ApiResponse{data=[]model_question.ReturnQuestion}	"get questions successful"
-//	@Failure		404	{object}	api_response.ApiResponse{data=nil}								"EditUserRequest failed"	"get questions failed"
-//	@Router			/api/question/get    [post]
+//	@Param			question	body		model_question.QueryQuestionRequest							true	"Query conditions"
+//	@Success		200	{object}	api_response.ApiResponse{data=[]model_question.ReturnQuestion}	"Get question list success"
+//	@Failure		400	{object}	api_response.ApiResponse{data=nil}								"Get question list failed"
+//	@Router			/api/question/query    [post]
 func (qc *QuestionController) GetQuestionList(c *gin.Context) {
 	session, _ := qc.session.GetSession(c)
 	if session.UserRole != constant.Admin && session.UserRole != constant.Common {
 		log.Printf("you are not allowed to get questions")
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not allowed to create get questions ").Response(api_response.AUTHERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "you are not allowed to create get questions ").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -135,32 +135,40 @@ func (qc *QuestionController) GetQuestionList(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&receiveQuestion); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "JSON unmarshal error").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "JSON unmarshal error").Response(api_response.OPERATIONERR))
 
 		return
 	}
 
+	page := receiveQuestion.Page
+	pageSize := receiveQuestion.PageSize
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
 	//字段验证
 	query := model_question.QueryQuestionToQuestion(receiveQuestion)
 	err := qc.checkQueryOrUpdateQuestion(query)
 	if err != nil {
 		log.Printf("validate %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, err.Error()).Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, err.Error()).Response(api_response.OPERATIONERR))
 
 		return
 	}
 
 	if err != nil {
 		log.Printf("validate %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "validate error").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "validate error").Response(api_response.OPERATIONERR))
 
 		return
 	}
 	commonQuery := model_question.QueryQToCommonQueryQ(receiveQuestion)
-	questionList, err := qc.questionService.GetQuestionList(commonQuery)
+	questionList, err := qc.questionService.GetQuestionList(commonQuery, page, pageSize)
 	if err != nil {
 		log.Printf("query questions %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "query questions error").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "query questions error").Response(api_response.OPERATIONERR))
 		return
 	}
 	res := model_question.QuestionsToReturnQuestions(questionList)
@@ -175,22 +183,22 @@ func (qc *QuestionController) GetQuestionList(c *gin.Context) {
 	c.JSON(http.StatusOK, api_response.NewResponse(res, "query questions success").Response(api_response.SUCCESS))
 }
 
-// UpdateQuestion 添加题目
+// UpdateQuestion 更新题目
 //
-//	@Summary		update question
-//	@Description	update question
+//	@Summary		Update question
+//	@Description	Update question
 //	@Tags			Question
 //	@Accept			json
 //	@Produce		json
-//	@Param			question	body		model_question.UpdateQuestionRequest	true	"update question"
-//	@Success		200			{object}	api_response.ApiResponse{data=nil}			"update successful"
-//	@Failure		404			{object}	api_response.ApiResponse{data=nil}			"update failed"
+//	@Param			question	body		model_question.UpdateQuestionRequest	true	"Update condition"
+//	@Success		200			{object}	api_response.ApiResponse{data=nil}			"Update success"
+//	@Failure		400			{object}	api_response.ApiResponse{data=nil}			"Update fail"
 //	@Router			/api/question/admin/update    [post]
 func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 	session, _ := qc.session.GetSession(c)
 	if session.UserRole != constant.Admin {
 		log.Printf("you are not allowed to update a new question")
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not allowed to update a new question").Response(api_response.AUTHERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "you are not allowed to update a new question").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -199,7 +207,7 @@ func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 	//反序列化取出JSON数据
 	if err := c.ShouldBindJSON(&receiveQuestion); err != nil {
 		log.Printf("JSON unmarshal  %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "JSON unmarshal error").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "JSON unmarshal error").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -210,7 +218,7 @@ func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 	err := qc.checkQueryOrUpdateQuestion(update)
 	if err != nil {
 		log.Printf("validate %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, err.Error()).Response(api_response.AUTHERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, err.Error()).Response(api_response.AUTHERR))
 
 		return
 	}
@@ -219,7 +227,7 @@ func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 	queryQuestion, err := qc.questionService.GetQuestion(receiveQuestion.ID)
 	if err != nil {
 		log.Printf("query model_question %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "query question error").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "query question error").Response(api_response.OPERATIONERR))
 		return
 	}
 
@@ -227,7 +235,7 @@ func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 	err = qc.questionService.UpdateQuestion(question)
 	if err != nil {
 		log.Printf("update model_question %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "update question error").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "update question error").Response(api_response.OPERATIONERR))
 		return
 	}
 
@@ -237,20 +245,20 @@ func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 
 // DeleteQuestion 删除题目
 //
-//	@Summary		delete question
-//	@Description	delete question
+//	@Summary		Delete question
+//	@Description	Delete question
 //	@Tags			Question
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string						true	"delete Question"
-//	@Success		200	{object}	api_response.ApiResponse{data=nil}	"delete  successful"
-//	@Failure		404	{object}	api_response.ApiResponse{data=nil}	"delete failed"
+//	@Param			id	path		string						true	"Question id"
+//	@Success		200	{object}	api_response.ApiResponse{data=nil}	"Delete  success"
+//	@Failure		400	{object}	api_response.ApiResponse{data=nil}	"Delete fail"
 //	@Router			/api/question/admin/delete    [get]
 func (qc *QuestionController) DeleteQuestion(c *gin.Context) {
 	session, _ := qc.session.GetSession(c)
 	if session.UserRole != constant.Admin {
 		log.Printf("you are not allowed to delete a question")
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "you are not allowed to delete a question").Response(api_response.AUTHERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "you are not allowed to delete a question").Response(api_response.AUTHERR))
 
 		return
 	}
@@ -258,7 +266,7 @@ func (qc *QuestionController) DeleteQuestion(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		log.Printf("id is empty")
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "id is empty").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "id is empty").Response(api_response.OPERATIONERR))
 
 		return
 	}
@@ -266,7 +274,7 @@ func (qc *QuestionController) DeleteQuestion(c *gin.Context) {
 	err := qc.questionService.DeleteQuestion(id)
 	if err != nil {
 		log.Printf("delete model_question %v", err)
-		c.JSON(http.StatusOK, api_response.NewResponse(nil, "delete question error").Response(api_response.OPERATIONERR))
+		c.JSON(http.StatusBadRequest, api_response.NewResponse(nil, "delete question error").Response(api_response.OPERATIONERR))
 		return
 	}
 

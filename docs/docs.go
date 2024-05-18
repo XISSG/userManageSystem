@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/question/admin/create": {
+        "/api/question/admin/add": {
             "post": {
-                "description": "add question",
+                "description": "Add question",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,10 +27,10 @@ const docTemplate = `{
                 "tags": [
                     "Question"
                 ],
-                "summary": "add question",
+                "summary": "Add question",
                 "parameters": [
                     {
-                        "description": "add question",
+                        "description": "Add question",
                         "name": "question",
                         "in": "body",
                         "required": true,
@@ -41,7 +41,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "add successful",
+                        "description": "Add question success",
                         "schema": {
                             "allOf": [
                                 {
@@ -58,8 +58,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "add failed",
+                    "400": {
+                        "description": "Add  question fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -81,7 +81,7 @@ const docTemplate = `{
         },
         "/api/question/admin/delete": {
             "get": {
-                "description": "delete question",
+                "description": "Delete question",
                 "consumes": [
                     "application/json"
                 ],
@@ -91,11 +91,11 @@ const docTemplate = `{
                 "tags": [
                     "Question"
                 ],
-                "summary": "delete question",
+                "summary": "Delete question",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "delete Question",
+                        "description": "Question id",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -103,7 +103,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "delete  successful",
+                        "description": "Delete  success",
                         "schema": {
                             "allOf": [
                                 {
@@ -120,8 +120,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "delete failed",
+                    "400": {
+                        "description": "Delete fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -143,7 +143,7 @@ const docTemplate = `{
         },
         "/api/question/admin/update": {
             "post": {
-                "description": "update question",
+                "description": "Update question",
                 "consumes": [
                     "application/json"
                 ],
@@ -153,10 +153,10 @@ const docTemplate = `{
                 "tags": [
                     "Question"
                 ],
-                "summary": "update question",
+                "summary": "Update question",
                 "parameters": [
                     {
-                        "description": "update question",
+                        "description": "Update condition",
                         "name": "question",
                         "in": "body",
                         "required": true,
@@ -167,7 +167,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "update successful",
+                        "description": "Update success",
                         "schema": {
                             "allOf": [
                                 {
@@ -184,8 +184,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "update failed",
+                    "400": {
+                        "description": "Update fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -205,9 +205,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/question/get": {
+        "/api/question/query": {
             "get": {
-                "description": "get question",
+                "description": "Query question",
                 "consumes": [
                     "application/json"
                 ],
@@ -217,11 +217,11 @@ const docTemplate = `{
                 "tags": [
                     "Question"
                 ],
-                "summary": "get question",
+                "summary": "Query question",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Get Question",
+                        "description": "Question id",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -229,7 +229,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "get question successful",
+                        "description": "Query question success",
                         "schema": {
                             "allOf": [
                                 {
@@ -246,8 +246,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "EditUserRequest failed\"\t\"get question failed",
+                    "400": {
+                        "description": "Query question fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -267,7 +267,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "get questions",
+                "description": "Get question list",
                 "consumes": [
                     "application/json"
                 ],
@@ -277,10 +277,10 @@ const docTemplate = `{
                 "tags": [
                     "Question"
                 ],
-                "summary": "get questions",
+                "summary": "Get question list",
                 "parameters": [
                     {
-                        "description": "Get Questions",
+                        "description": "Query conditions",
                         "name": "question",
                         "in": "body",
                         "required": true,
@@ -291,7 +291,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "get questions successful",
+                        "description": "Get question list success",
                         "schema": {
                             "allOf": [
                                 {
@@ -311,8 +311,72 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "EditUserRequest failed\"\t\"get questions failed",
+                    "400": {
+                        "description": "Get question list failed",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/submit/add": {
+            "post": {
+                "description": "Submit",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "QuestionSubmit"
+                ],
+                "summary": "Submit",
+                "parameters": [
+                    {
+                        "description": "Submit code",
+                        "name": "model_question",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model_question.AddQuestionSubmitRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Submit success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Submit failed",
                         "schema": {
                             "allOf": [
                                 {
@@ -334,7 +398,7 @@ const docTemplate = `{
         },
         "/api/submit/query": {
             "get": {
-                "description": "get question submit result",
+                "description": "Get question submit result",
                 "consumes": [
                     "application/json"
                 ],
@@ -344,11 +408,11 @@ const docTemplate = `{
                 "tags": [
                     "QuestionSubmit"
                 ],
-                "summary": "get question submit result",
+                "summary": "Get question submit result",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "query",
+                        "description": "Query id",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -356,7 +420,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "query  successful",
+                        "description": "Query  success",
                         "schema": {
                             "allOf": [
                                 {
@@ -373,8 +437,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "query failed",
+                    "400": {
+                        "description": "Query fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -394,7 +458,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "get question submit result",
+                "description": "Get question submit list",
                 "consumes": [
                     "application/json"
                 ],
@@ -404,10 +468,10 @@ const docTemplate = `{
                 "tags": [
                     "QuestionSubmit"
                 ],
-                "summary": "get question submit result",
+                "summary": "Get question submit list",
                 "parameters": [
                     {
-                        "description": "queries",
+                        "description": "Query condition",
                         "name": "query",
                         "in": "body",
                         "required": true,
@@ -418,7 +482,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "query  successful",
+                        "description": "Query  success",
                         "schema": {
                             "allOf": [
                                 {
@@ -438,72 +502,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "query failed",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/api_response.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/api/submit/submission": {
-            "post": {
-                "description": "submit",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "QuestionSubmit"
-                ],
-                "summary": "submit",
-                "parameters": [
-                    {
-                        "description": "submit code",
-                        "name": "model_question",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model_question.AddQuestionSubmitRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "submit success",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/api_response.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "submit failed",
+                    "400": {
+                        "description": "Query fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -525,7 +525,7 @@ const docTemplate = `{
         },
         "/api/user/admin/delete": {
             "get": {
-                "description": "DeleteUser user information by user account",
+                "description": "DeleteUser user  by user account",
                 "consumes": [
                     "application/json"
                 ],
@@ -535,11 +535,11 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "DeleteUser user by user account",
+                "summary": "DeleteUser user",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Useraccount",
+                        "description": "User account",
                         "name": "user",
                         "in": "path",
                         "required": true
@@ -547,7 +547,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "DeleteUser successful",
+                        "description": "Delete user success",
                         "schema": {
                             "allOf": [
                                 {
@@ -564,8 +564,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "DeleteUser failed",
+                    "400": {
+                        "description": "Delete user fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -597,7 +597,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Query user list for admin",
+                "summary": "Admin query",
                 "parameters": [
                     {
                         "description": "queries",
@@ -611,7 +611,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Query successful",
+                        "description": "Query success",
                         "schema": {
                             "allOf": [
                                 {
@@ -631,8 +631,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "Query failed",
+                    "400": {
+                        "description": "Query fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -654,7 +654,7 @@ const docTemplate = `{
         },
         "/api/user/admin/update": {
             "post": {
-                "description": "admin edit user information",
+                "description": "Admin edit user information",
                 "consumes": [
                     "application/json"
                 ],
@@ -664,10 +664,10 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "admin edit user information",
+                "summary": "Admin edit user information",
                 "parameters": [
                     {
-                        "description": "User Information",
+                        "description": "User information",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -678,7 +678,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "EditUserRequest successful",
+                        "description": "Edit user request success",
                         "schema": {
                             "allOf": [
                                 {
@@ -695,8 +695,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "EditUserRequest failed",
+                    "400": {
+                        "description": "Edit user request fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -718,7 +718,7 @@ const docTemplate = `{
         },
         "/api/user/login": {
             "post": {
-                "description": "Authenticate user login",
+                "description": "User login",
                 "consumes": [
                     "application/json"
                 ],
@@ -728,10 +728,10 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "User login",
+                "summary": "Login",
                 "parameters": [
                     {
-                        "description": "User Information",
+                        "description": "User information",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -742,7 +742,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Common successful",
+                        "description": "Login success",
                         "schema": {
                             "allOf": [
                                 {
@@ -759,8 +759,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "Common failed",
+                    "400": {
+                        "description": "Login fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -789,10 +789,10 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "User logout",
+                "summary": "Logout",
                 "responses": {
                     "200": {
-                        "description": "Logout successful",
+                        "description": "Logout success",
                         "schema": {
                             "allOf": [
                                 {
@@ -809,8 +809,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "Logout failed",
+                    "400": {
+                        "description": "Logout fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -832,7 +832,7 @@ const docTemplate = `{
         },
         "/api/user/query": {
             "post": {
-                "description": "Get user information",
+                "description": "Query user list",
                 "consumes": [
                     "application/json"
                 ],
@@ -845,7 +845,7 @@ const docTemplate = `{
                 "summary": "Query user",
                 "parameters": [
                     {
-                        "description": "queries",
+                        "description": "Query",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -856,7 +856,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Query successful",
+                        "description": "Query success",
                         "schema": {
                             "allOf": [
                                 {
@@ -876,8 +876,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "Query failed",
+                    "400": {
+                        "description": "Query fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -909,10 +909,10 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "User register",
+                "summary": "Register",
                 "parameters": [
                     {
-                        "description": "User Information",
+                        "description": "User information",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -923,7 +923,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success registered",
+                        "description": "Register success",
                         "schema": {
                             "allOf": [
                                 {
@@ -940,8 +940,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "Register failed",
+                    "400": {
+                        "description": "Register fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -973,10 +973,10 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "User update",
+                "summary": "Update user",
                 "parameters": [
                     {
-                        "description": "User Information",
+                        "description": "Update information",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -987,7 +987,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "UpdateUserRequest successful",
+                        "description": "Update user request success",
                         "schema": {
                             "allOf": [
                                 {
@@ -1004,8 +1004,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "UpdateUserRequest failed",
+                    "400": {
+                        "description": "Update user request fail",
                         "schema": {
                             "allOf": [
                                 {
@@ -1148,16 +1148,11 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "judge_case": {
-                    "description": "\"判题用例json数组\"",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model_question.JudgeCase"
-                    }
+                "page": {
+                    "type": "integer"
                 },
-                "language": {
-                    "description": "语言",
-                    "type": "string"
+                "page_size": {
+                    "type": "integer"
                 },
                 "tag": {
                     "description": "\"标签列表json数组\"",
@@ -1183,6 +1178,12 @@ const docTemplate = `{
                 "language": {
                     "description": "\"编程语言\"",
                     "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
                 },
                 "question_id": {
                     "description": "\"判题id\"",
@@ -1237,6 +1238,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "answer": {
+                    "description": "\"题目答案\"",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -1361,6 +1363,12 @@ const docTemplate = `{
                     "description": "是否删除",
                     "type": "integer"
                 },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
                 "user_account": {
                     "description": "用户账号",
                     "type": "string"
@@ -1469,6 +1477,14 @@ const docTemplate = `{
                 "id": {
                     "description": "id",
                     "type": "string"
+                },
+                "page": {
+                    "description": "查询页号",
+                    "type": "integer"
+                },
+                "page_size": {
+                    "description": "查询页大小",
+                    "type": "integer"
                 },
                 "user_account": {
                     "description": "用户账号",

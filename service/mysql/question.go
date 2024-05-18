@@ -118,8 +118,8 @@ func (qds *QuestionService) GetQuestion(questionId string) (model_question.Quest
  * @return error
  * @author xissg
  */
-func (qds *QuestionService) GetQuestionList(questionList model_question.CommonQueryQuestion) ([]model_question.Question, error) {
-	//TODO:使用分页查询
+func (qds *QuestionService) GetQuestionList(questionList model_question.CommonQueryQuestion, page, pageSize int) ([]model_question.Question, error) {
+	offset := (page - 1) * pageSize
 	err := qds.db.AutoMigrate(&model_question.Question{})
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (qds *QuestionService) GetQuestionList(questionList model_question.CommonQu
 
 	var res []model_question.Question
 	tx := qds.db.Begin()
-	err = tx.Table("question").Where(&questionList).Find(&res).Error
+	err = tx.Table("question").Where(&questionList).Limit(pageSize).Offset(offset).Find(&res).Error
 	if err != nil {
 		tx.Rollback()
 

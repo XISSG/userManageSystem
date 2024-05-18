@@ -67,8 +67,8 @@ func (qsds *QuestionSubmitService) GetSubmitQuestion(submitId string) (model_que
  * @return error
  * @author xissg
  */
-func (qsds *QuestionSubmitService) GetSubmitQuestionList(qsQuery model_question.CommonQueryQS) ([]model_question.QuestionSubmit, error) {
-	//TODO:使用分页查询
+func (qsds *QuestionSubmitService) GetSubmitQuestionList(qsQuery model_question.CommonQueryQS, page, pageSize int) ([]model_question.QuestionSubmit, error) {
+	offset := (page - 1) * pageSize
 	err := qsds.db.AutoMigrate(&model_question.QuestionSubmit{})
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (qsds *QuestionSubmitService) GetSubmitQuestionList(qsQuery model_question.
 
 	var res []model_question.QuestionSubmit
 
-	err = qsds.db.Table("question_submit").Where(&qsQuery).Find(&res).Limit(1000).Error
+	err = qsds.db.Table("question_submit").Where(&qsQuery).Limit(pageSize).Offset(offset).Find(&res).Error
 	if err != nil {
 		return nil, err
 	}

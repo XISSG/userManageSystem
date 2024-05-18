@@ -161,6 +161,9 @@ type QueryQuestionRequest struct {
 	Tag string `json:"tag" `
 	// "创建用户id"
 	UserId string `json:"user_id" `
+
+	Page     int `json:"page"`
+	PageSize int `json:"page_size"`
 }
 
 func QueryQuestionToQuestion(q QueryQuestionRequest) Question {

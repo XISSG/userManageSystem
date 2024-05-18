@@ -63,14 +63,15 @@ func (us *UserService) GetUser(accountName string) (model_user.User, error) {
  * @return error
  * @author xissg
  */
-func (us *UserService) GetUserList(queryModel model_user.AdminUserQueryRequest) ([]model_user.User, error) {
+func (us *UserService) GetUserList(queryModel model_user.AdminUserQueryRequest, page, pageSize int) ([]model_user.User, error) {
 	var users []model_user.User
+	offset := (page - 1) * pageSize
 	err := us.db.AutoMigrate(&model_user.User{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = us.db.Table("user").Where(&queryModel).Find(&users).Limit(1000).Error
+	err = us.db.Table("user").Where(&queryModel).Limit(pageSize).Offset(offset).Find(&users).Error
 	if err != nil {
 		return nil, err
 	}
