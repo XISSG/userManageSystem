@@ -1,0 +1,5 @@
+user: guest
+password: guest
+host: localhost
+port: 5672
+

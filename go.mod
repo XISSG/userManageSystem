@@ -3,12 +3,12 @@ module github.com/xissg/userManageSystem
 go 1.22.2
 
 require (
-	github.com/DeanThompson/ginpprof v0.0.0-20201112072838-007b1e56b2e1
 	github.com/dlclark/regexp2 v1.11.0
 	github.com/docker/docker v26.1.2+incompatible
 	github.com/gin-contrib/sessions v1.0.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.4.0
+	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/spf13/viper v1.18.2
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0

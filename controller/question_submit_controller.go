@@ -85,15 +85,15 @@ func (qsc *QuestionSubmitController) Submit(c *gin.Context) {
 	log.Printf("submit success")
 	c.JSON(http.StatusOK, api_response.NewResponse(questionSubmit.ID, "submit success").Response(api_response.SUCCESS))
 
-	//TODO: 使用消息队列优化性能
-	//协程池优化性能
+	//使用消息队列发送信息
 	var wg sync.WaitGroup
-
 	wg.Add(1)
 	go func(string) {
-		defer wg.Done()
-		judge.NewJudgeService(qsc.questionService, qsc.qsService).Judge(questionSubmit.ID)
+		judging := judge.NewJudgeService(qsc.questionService, qsc.qsService)
+		judging.Judge(questionSubmit.ID)
+		wg.Done()
 	}(questionSubmit.ID)
+
 	wg.Wait()
 }
 

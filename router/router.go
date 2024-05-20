@@ -7,7 +7,6 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/xissg/userManageSystem/controller"
-	"github.com/xissg/userManageSystem/dao"
 	_ "github.com/xissg/userManageSystem/docs"
 	"github.com/xissg/userManageSystem/entity/model_user"
 	"github.com/xissg/userManageSystem/middleware"
@@ -26,27 +25,22 @@ func NewServer() {
 	//cors中间件
 	r.Use(middleware.CORS)
 
-	// 初始化数据库连接
-	db := dao.InitDB()
-
-	//rdb := dao.InitRedis()
-
 	//初始化session
-	store := dao.InitRedisStore()
+	store := redis2.InitRedisStore()
 	r.Use(sessions.Sessions("session", store))
 
 	//注入依赖
-	sessionService := redis2.NewSessionService(store)
-	mysqlService := mysql2.NewUserService(db)
+	sessionService := redis2.NewSessionService()
+	mysqlService := mysql2.NewUserService()
 	userController := controller.NewUserController(*mysqlService, *sessionService)
 
 	//题目相关依赖
-	questionMysqlService := mysql2.NewQuestionMysqlService(db)
+	questionMysqlService := mysql2.NewQuestionMysqlService()
 	questionController := controller.NewQuestionController(questionMysqlService, sessionService)
 
 	//题目提交相关依赖
-	qsMysqlService := mysql2.NewQuestionSubmitMysqlService(db)
-	qsService := mysql2.NewQuestionMysqlService(db)
+	qsMysqlService := mysql2.NewQuestionSubmitMysqlService()
+	qsService := mysql2.NewQuestionMysqlService()
 	qsController := controller.NewQuestionSubmitController(qsMysqlService, qsService, sessionService)
 
 	//映射路由

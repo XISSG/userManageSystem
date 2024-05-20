@@ -10,8 +10,8 @@ type UserService struct {
 	db *gorm.DB
 }
 
-func NewUserService(db *gorm.DB) *UserService {
-
+func NewUserService() *UserService {
+	db := initDB()
 	return &UserService{
 		db: db,
 	}

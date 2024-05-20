@@ -10,7 +10,8 @@ type QuestionService struct {
 	db *gorm.DB
 }
 
-func NewQuestionMysqlService(db *gorm.DB) *QuestionService {
+func NewQuestionMysqlService() *QuestionService {
+	db := initDB()
 	return &QuestionService{
 		db: db,
 	}

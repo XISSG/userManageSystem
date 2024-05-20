@@ -13,8 +13,9 @@ type SessionService struct {
 	store redis.Store
 }
 
-func NewSessionService(store redis.Store) *SessionService {
+func NewSessionService() *SessionService {
 
+	store := InitRedisStore()
 	return &SessionService{
 		store: store,
 	}

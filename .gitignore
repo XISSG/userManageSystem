@@ -1,4 +1,3 @@
 requests
 .idea
-conf/mysql.yaml
-conf/redis.yaml
+vendor
